@@ -208,7 +208,6 @@ mylib.utils.collections = (function(window, $) {
 
         self.actualHeight = createObservable("100%");
         self.availableItems = [];
-        self.pageList = new PageList();
         
         if (items) {
             _.each(items, function(i) {
@@ -302,8 +301,8 @@ mylib.utils.collections = (function(window, $) {
 
             if (duration >= actualDelay) {
                 setTimeout(function() {
-                    self.currentPage.showItems( self.pageList.current.pageId, 
-                                                self.pageList.current.startIndex, 
+                    self.currentPage.showItems( _pageList.current.pageId, 
+                                                _pageList.current.startIndex, 
                                                 $(_collectionContainerId).height() );
                 }, actualDelay);
 
@@ -313,14 +312,14 @@ mylib.utils.collections = (function(window, $) {
 
         self.showNext = function() {
             console.log("<showNext>");
-            self.pageList.moveNext(self.currentPage.visibleRange.to() + 1);
+            _pageList.moveNext(self.currentPage.visibleRange.to() + 1);
             self.show(app_defaults.resize_delay);
         };
 
         self.showPrev = function() {
             console.log("<showPrev>");
             
-            self.pageList.movePrev();
+            _pageList.movePrev();
             self.show(app_defaults.resize_delay);
         };
 
