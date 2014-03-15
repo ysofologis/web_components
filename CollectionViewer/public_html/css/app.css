@@ -1,0 +1,72 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Mar 14, 2014, 11:51:01 PM
+    Author     : freesrc
+*/
+
+html,body {
+    height: 100%;
+    background: #f3f3f3;
+}
+
+#main {
+    background: lightgrey;
+    height: 100%;
+    position:relative;
+    overflow: hidden;
+}
+
+#main > .row {
+    height: 100%;
+}
+
+
+#view-container {
+    background: #d6e9c6;
+    height: 100%;
+}
+
+#footer {
+    position: absolute;
+    height: 5px;
+    bottom: 0px;
+    width: 100%;
+    background: #656f79;
+}
+
+.collection-view {
+    height: 100%;
+    background: rgba(128,128,128,0.2);
+    border-radius: 7px;
+    padding-bottom: 75px;
+}
+
+.collection-view .list-container {
+    overflow: hidden;
+    height: 100%;
+    border-bottom: solid 1px gray;
+}
+
+.collection-view .item-container {
+    border: solid #309dd4 1px;
+    border-radius: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.collection-view .item-visible {
+    opacity: 1.0;
+}
+
+.collection-view .item-hidden {
+    opacity: 0.0;
+}
+
+.collection-view .paging {
+    margin-left: 10px;
+}
