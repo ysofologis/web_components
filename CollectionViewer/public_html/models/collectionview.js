@@ -116,11 +116,8 @@ mylib.utils.collections = (function(window, $) {
         self.visibleRange = new ItemsRange(0, items.length - 1);
         
         self.visibleItems = createComputed(function() {
-            
             var r = self.availableItems.slice( self.visibleRange.from() );
-            
             return r;
-            
         }, self);
         
 
@@ -184,6 +181,7 @@ mylib.utils.collections = (function(window, $) {
         self.moveNext = function(startIndex) {
             if( self.current.nextPage  ) {
                 self.current = self.current.nextPage;
+                self.current.startIndex = startIndex;
             } else {
                 var pg =  new Page( startIndex );
                 
