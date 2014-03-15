@@ -33,21 +33,33 @@ and open the template in the editor.
                                 <span>
                                     Page: [<b data-bind="text: currentPage.pageIndex"></b>]
                                 </span>
-                                <span style="margin-left: 10px;">
+                                <span>|</span>
+                                <span>
                                     Items: [<b data-bind="text: itemsCount"></b>]
                                 </span>
+                                <span>|</span>
+                                <span>
+                                    From: [<b data-bind="text: fromVisible"></b>]
+                                </span>
+                                <span>|</span>
+                                <span>
+                                    To: [<b data-bind="text: toVisible"></b>]
+                                </span>
                             </div>
-                            <div class="row">
-                                <a href="javascript:void(0)" 
-                                   class="col-md-6"
-                                   data-bind="click: showPrev">
-                                    Previous
-                                </a>
-                                <a href="javascript:void(0)" 
-                                   class="col-md-6"
-                                   data-bind="click: showNext">
-                                    Next
-                                </a>
+                            <div class="row" style="margin-right: 10px;">
+                                <div class="col-md-8"></div>
+                                <div class="col-md-2" style="text-align: right">
+                                    <a href="javascript:void(0)" 
+                                       data-bind="click: showPrev">
+                                        Previous
+                                    </a>
+                                </div>
+                                <div class="col-md-2" style="text-align: right">
+                                    <a href="javascript:void(0)" 
+                                       data-bind="click: showNext">
+                                        Next
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -60,27 +72,72 @@ and open the template in the editor.
 
         <!-- == templates == -->
         <script type="text/html" id="itemContainerTemplate">
-            <li data-bind="attr: {id: itemId}">
-                <div class="item-container" 
-                    data-bind="template: {name: 'itemTemplate'}">
-                </div>
-            </li>
-        </script>
-
-        <script type="text/html" id="itemTemplate">
-            <div class="panel panel-default">
-              <div class="panel-heading" data-bind="text: model.header"></div>
-              <div class="panel-body" data-bind="text: model.text">
-                
-              </div>
+        <li data-bind="attr: {id: itemId}">
+            <div class="item-container" 
+                 data-bind="template: {name: 'itemTemplate'}">
             </div>
-        </script>
+        </li>
+    </script>
 
-        <!-- == dependencies == -->
-        <script src="js/underscore.js"></script>
-        <script src="js/jquery.js"></script>
-        <script src="js/bootstrap.js"></script>
-        <script src="js/knockout.js"></script>
-        <script src="models/collectionview.js"></script>
-    </body>
+    <script type="text/html" id="itemTemplate">
+        <div class="panel panel-default">
+            <div class="panel-heading" data-bind="text: model.header"></div>
+            <div class="panel-body" data-bind="text: model.text">
+
+            </div>
+        </div>
+    </script>
+
+    <!-- == dependencies == -->
+    <script src="js/underscore.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/knockout.js"></script>
+    <script src="models/collectionview.js"></script>
+    <script src="models/collectionview.js"></script>
+
+    <script type="text/javascript">
+
+        function createItem(header, text, lines) {
+            var item = {header: header, text: ""};
+
+            for (var ix = 0; ix < lines; ix++) {
+                item.text += text + "\n";
+            }
+
+            return item;
+        }
+
+        var collectionItems = [
+            createItem('01. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+            createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+            createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+            createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+            createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+            createItem('05. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+            createItem('06. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+            createItem('07. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+            createItem('08. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+            createItem('09. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+            createItem('10. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+            createItem('11. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+            createItem('12. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2)
+        ];
+            
+        var appDefaults = mylib.utils.collections.Defaults;
+        
+        appDefaults.zero_opacity = 100;
+        
+        var collectionViewer = new mylib.utils.collections.CollectionViewer("#main",
+                                                "#view-container .collection-view .list-container",
+                                                collectionItems,
+                                                "my-collection");
+
+        ko.applyBindings(collectionViewer);
+
+        collectionViewer.show();
+        
+    </script>
+
+</body>
 </html>
