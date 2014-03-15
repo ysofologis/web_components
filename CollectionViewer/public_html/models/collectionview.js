@@ -114,36 +114,38 @@ mylib.utils.collections = (function(window, $) {
         self.availableItems = items;
         self.pageIndex = createObservable(1);
         self.visibleRange = new ItemsRange(0, items.length - 1);
+        
+        self.visibleItems = createComputed(function() {
+            
+            var r = self.availableItems.slice( self.visibleRange.from() );
+            
+            return r;
+            
+        }, self);
+        
 
-        self.showItems = function(containerHeight) {
-
+        self.showItems = function(pageId, startIndex, containerHeight) {
             var currentHeight = 0.0;
             var lastIndex = 0;
+            
+            self.pageIndex(pageId);
+            self.visibleRange.from(startIndex);
 
             for (var ix = self.visibleRange.from(); ix < self.availableItems.length; ix++) {
-
                 lastIndex = 0;
-
                 var currentItem = self.availableItems[ix];
-
+                
                 function showCurrent(anItem) {
-
                     var itemHeight = $("#" + anItem.itemId).height();
-
                     currentHeight += itemHeight;
-
                     if (currentHeight < containerHeight) {
                         setTimeout(function() {
                             anItem.show();
                         }, 150);
-
                         self.visibleRange.to(ix);
-
                         return true;
-
                     } else {
                         console.log("item exceeds container height.");
-
                         if (!anItem.isVisible()) {
                             return false;
                         } else {
@@ -162,6 +164,40 @@ mylib.utils.collections = (function(window, $) {
         };
     }
 
+    function Page(startIndex) {
+        
+        var self = this;
+        
+        self.prevPage = null;
+        self.nextPage = null;
+        self.startIndex = startIndex;
+        self.pageId = 1;
+    }
+    
+    function PageList() {
+        var self = this;
+        
+        self.head = new Page(0);
+        self.tail = null;
+        self.current = self.head;
+        
+        self.moveNext = function(startIndex) {
+            if( self.current.nextPage  ) {
+                self.current = self.current.nextPage;
+            } else {
+                var pg =  new Page( startIndex );
+                
+                pg.pageId = self.current.pageId + 1;
+                pg.prevPage = self.current;
+                self.current.nextPage = pg;
+                self.current = pg;
+            }
+        };
+        
+        self.movePrev = function() {
+          self.current = self.current.prevPage;  
+        };
+    }
 
     function DynamicPager(pageContainerId, collectionContainerId, items, collectionName) {
 
@@ -170,9 +206,11 @@ mylib.utils.collections = (function(window, $) {
         // var _collectionName = collectionName;
         var _pageContainerId = pageContainerId;
         var _collectionContainerId = collectionContainerId;
+        var _pageList = new PageList();
 
         self.actualHeight = createObservable("100%");
         self.availableItems = [];
+        self.pageList = new PageList();
         
         if (items) {
             _.each(items, function(i) {
@@ -266,7 +304,9 @@ mylib.utils.collections = (function(window, $) {
 
             if (duration >= actualDelay) {
                 setTimeout(function() {
-                    self.currentPage.showItems($(_collectionContainerId).height());
+                    self.currentPage.showItems( self.pageList.current.pageId, 
+                                                self.pageList.current.startIndex, 
+                                                $(_collectionContainerId).height() );
                 }, actualDelay);
 
                 _lastShow = nowTime;
@@ -275,11 +315,15 @@ mylib.utils.collections = (function(window, $) {
 
         self.showNext = function() {
             console.log("<showNext>");
+            self.pageList.moveNext(self.currentPage.visibleRange.to() + 1);
+            self.show(app_defaults.resize_delay);
         };
 
         self.showPrev = function() {
             console.log("<showPrev>");
-
+            
+            self.pageList.movePrev();
+            self.show(app_defaults.resize_delay);
         };
 
     }
