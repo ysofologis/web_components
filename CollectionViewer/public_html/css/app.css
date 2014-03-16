@@ -49,6 +49,12 @@ html,body {
     overflow: hidden;
     height: 100%;
     border-bottom: solid 1px gray;
+    padding: 5px;
+}
+
+.collection-view .list-container > li {
+    margin: 5px 0px 5px 0px;
+    padding: 0px 5px 0 5px;
 }
 
 .collection-view .item-container {
@@ -57,10 +63,6 @@ html,body {
     overflow: auto;
     border: solid #309dd4 1px;
     border-radius: 5px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    padding: 5px;
-    padding-bottom: 10px;
 }
 
 .collection-view .item-visible {
@@ -75,12 +77,12 @@ html,body {
     margin-left: 10px;
 }
 
-.collection-view .paging .divider {
+.collection-view .divider {
     margin-left: 5px;
     margin-right: 5px;
     color:black;
 }
 
-.collection-view .paging .divider:after {
+.collection-view .divider:after {
     content: "|";
 }

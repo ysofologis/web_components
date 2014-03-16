@@ -50,13 +50,13 @@ and open the template in the editor.
                                 <div class="col-md-8"></div>
                                 <div class="col-md-2" style="text-align: right">
                                     <button class="btn btn-link"
-                                       data-bind="click: showPrev, enable: hasPrev">
+                                            data-bind="click: showPrev, enable: hasPrev">
                                         Previous
                                     </button>
                                 </div>
                                 <div class="col-md-2" style="text-align: right">
                                     <button class="btn btn-link"
-                                       data-bind="click: showNext, enable: hasNext">
+                                            data-bind="click: showNext, enable: hasNext">
                                         Next
                                     </button>
                                 </div>
@@ -72,9 +72,9 @@ and open the template in the editor.
 
         <!-- == templates == -->
         <script type="text/html" id="itemContainerTemplate">
-        <li data-bind="attr: {id: itemId}, style: { height: desiredHeight }">
+        <li>
             <div class="item-container" 
-                 data-bind="template: {name: 'itemTemplate'}">
+                 data-bind="template: {name: 'itemTemplate'}, attr: {id: itemId}, style: { height: desiredHeight }">
             </div>
         </li>
     </script>
@@ -83,8 +83,12 @@ and open the template in the editor.
         <div class="panel panel-default">
             <div class="panel-heading">
                 <span data-bind="text: model.header"></span>
-                <span>|<span>
+                <span class="divider"></span>
+                <span>Desired:</span>
                 <span data-bind="text: desiredHeight"></span>
+                <span class="divider"></span>
+                <span>Actual:</span>
+                <span data-bind="text: actualHeight"></span>
             </div>
             <div class="panel-body" data-bind="text: model.text">
 
@@ -113,7 +117,7 @@ and open the template in the editor.
 
         var collectionItems = [
             createItem('01. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
-            createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+            createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf\n 456547547thjyuiyuifghg δφγυηρυτρτ ', 1),
             createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
             createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
             createItem('05. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
