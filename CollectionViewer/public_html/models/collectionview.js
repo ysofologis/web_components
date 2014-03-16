@@ -39,6 +39,20 @@ mylib.utils.collections = (function(window, $) {
         value: 100
     });
 
+    Object.defineProperty(app_defaults, "x_margin", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: 10
+    });
+
+    Object.defineProperty(app_defaults, "x_shrink_factor", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: 0.50
+    });
+
     Object.defineProperty(app_defaults, "item_visible_class", {
         enumerable: false,
         configurable: false,
@@ -53,6 +67,25 @@ mylib.utils.collections = (function(window, $) {
         value: "item-hidden"
     });
 
+    Object.defineProperty(app_defaults, "item_container_height", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: "auto"
+    });
+
+    if (!String.format) {
+        String.format = function(format) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            return format.replace(/{(\d+)}/g, function(match, number) {
+                return typeof args[number] !== 'undefined'
+                        ? args[number]
+                        : match
+                        ;
+            });
+        };
+    }
+
     function createObservable(initialValue) {
         return ko.observable(initialValue);
     }
@@ -60,33 +93,87 @@ mylib.utils.collections = (function(window, $) {
     function createObservableArray(initialData) {
         return ko.observableArray(initialData);
     }
-    
+
     function createComputed(func, binder) {
         return ko.computed(func, binder);
     }
 
+    /*
+     * Contains an item from the input array
+     * @param {type} id
+     * @param {type} model
+     * @param {type} idPrefix
+     * @returns {undefined}
+     */
     function ItemContainer(id, model, idPrefix) {
         var self = this;
 
         self.itemId = idPrefix + "-item-" + id;
         self.model = model;
+        self.desiredHeight = createObservable(app_defaults.item_container_height);
 
+        var _defaultHeight = 0;
         var _isVisible = true;
 
-        //self.opacity = ko.observable(app_defaults.zero_opacity);
+        function getElem() {
+            var e = $("#" + self.itemId);
+            return e;
+        }
+
+        self.getInitialHeight = function() {
+            if (_defaultHeight === 0) {
+                _defaultHeight = getElem().height();
+            }
+            return _defaultHeight;
+        }
+        
+        self.getIdealHeight = function() {
+          
+            if ( self.desiredHeight() === app_defaults.item_container_height ) {
+                
+                var h = getElem().height();
+                
+                return h;
+            } else {
+                return self.getInitialHeight();
+            }
+            
+        };
 
         self.isVisible = function() {
             return _isVisible;
         };
 
         self.show = function() {
-            $("#" + self.itemId).removeClass(app_defaults.item_hidden_class).addClass(app_defaults.item_visible_class);
+            getElem().removeClass(app_defaults.item_hidden_class).addClass(app_defaults.item_visible_class);
             _isVisible = true;
         };
 
         self.hide = function() {
-            $("#" + self.itemId).removeClass(app_defaults.item_visible_class).addClass(app_defaults.item_hidden_class);
+            getElem().removeClass(app_defaults.item_visible_class).addClass(app_defaults.item_hidden_class);
             _isVisible = false;
+        };
+
+        self.setHeight = function(newHeight) {
+            var h = getElem().height();
+
+            if (_defaultHeight === 0) {
+                _defaultHeight = h;
+            }
+
+            self.desiredHeight(newHeight + "px");
+        };
+
+        self.resetHeight = function() {
+            if (_defaultHeight > 0) {
+                self.desiredHeight(_defaultHeight + "px");
+            }
+        };
+        
+        self.setAutoHeight = function() {
+           
+            self.desiredHeight(app_defaults.item_container_height);
+            
         };
     }
 
@@ -114,43 +201,72 @@ mylib.utils.collections = (function(window, $) {
         self.availableItems = items;
         self.pageIndex = createObservable(1);
         self.visibleRange = new ItemsRange(0, items.length - 1);
-        
+
         self.visibleItems = createComputed(function() {
-            var r = self.availableItems.slice( self.visibleRange.from() );
+            var r = self.availableItems.slice(self.visibleRange.from());
             return r;
         }, self);
-        
 
+        self.nextStart = function() {
+            return self.visibleRange.to() + 1;
+        };
+        /*
+         * Renders items for the current page starting from a given array slice index
+         * @param {type} pageId
+         * @param {type} startIndex
+         * @param {type} containerHeight
+         * @returns {Number}
+         */
         self.showItems = function(pageId, startIndex, containerHeight) {
             var currentHeight = 0.0;
             var lastIndex = 0;
-            
+
             self.pageIndex(pageId);
             self.visibleRange.from(startIndex);
 
             for (var ix = self.visibleRange.from(); ix < self.availableItems.length; ix++) {
                 lastIndex = 0;
                 var currentItem = self.availableItems[ix];
-                
+
                 function showCurrent(anItem) {
-                    var itemHeight = $("#" + anItem.itemId).height();
+                    
+                    var itemHeight = anItem.getIdealHeight() + app_defaults.x_margin;
+                    var remaining_height = containerHeight - currentHeight;
                     currentHeight += itemHeight;
+
                     if (currentHeight < containerHeight) {
+                        anItem.setAutoHeight();
                         setTimeout(function() {
                             anItem.show();
                         }, 150);
                         self.visibleRange.to(ix);
                         return true;
                     } else {
-                        console.log("item exceeds container height.");
-                        if (!anItem.isVisible()) {
-                            return false;
-                        } else {
-                            anItem.hide();
+
+                        var remaining_heigh_factor = (remaining_height / itemHeight);
+
+                        if (remaining_heigh_factor >= app_defaults.x_shrink_factor) {
+                            console.log( String.format("item [{0}] will be shrinked."), anItem.itemId );
+                            anItem.setHeight(remaining_height - app_defaults.x_margin);
+                            setTimeout(function() {
+                                anItem.show();
+                            }, 150);
+                            self.visibleRange.to(ix);
+                            return true;
+
+                        }
+                        else {
+                            console.log( String.format("item [{0}] exceeds container height.", anItem.itemId ));
+                            if (!anItem.isVisible()) {
+                                return false;
+                            } else {
+                                anItem.hide();
+                            }
                         }
                     }
                 }
 
+                        
                 if (!showCurrent(currentItem)) {
                     lastIndex = ix - 1;
                     break;
@@ -160,40 +276,47 @@ mylib.utils.collections = (function(window, $) {
             return lastIndex;
         };
     }
-
+    /*
+     * 
+     * @param {type} startIndex
+     * @returns {undefined}
+     */
     function Page(startIndex) {
-        
+
         var self = this;
-        
+
         self.prevPage = null;
         self.nextPage = null;
         self.startIndex = startIndex;
         self.pageId = 1;
     }
-    
-    function PageList() {
+    /*
+     * Page navigation
+     * @returns {undefined}
+     */
+    function PageNavigation() {
         var self = this;
-        
+
         self.head = new Page(0);
         self.tail = null;
         self.current = self.head;
-        
+
         self.moveNext = function(startIndex) {
-            if( self.current.nextPage  ) {
+            if (self.current.nextPage) {
                 self.current = self.current.nextPage;
                 self.current.startIndex = startIndex;
             } else {
-                var pg =  new Page( startIndex );
-                
+                var pg = new Page(startIndex);
+
                 pg.pageId = self.current.pageId + 1;
                 pg.prevPage = self.current;
                 self.current.nextPage = pg;
                 self.current = pg;
             }
         };
-        
+
         self.movePrev = function() {
-          self.current = self.current.prevPage;  
+            self.current = self.current.prevPage;
         };
     }
 
@@ -204,17 +327,17 @@ mylib.utils.collections = (function(window, $) {
         // var _collectionName = collectionName;
         var _pageContainerId = pageContainerId;
         var _collectionContainerId = collectionContainerId;
-        var _pageList = new PageList();
+        var _pageNav = new PageNavigation();
 
         self.actualHeight = createObservable("100%");
         self.availableItems = [];
-        
+
         if (items) {
             _.each(items, function(i) {
                 self.availableItems.push(new ItemContainer(self.availableItems.length + 1, i, collectionName));
             });
         }
-        
+
         self.currentPage = new ItemsPage(self.availableItems);
 
         self.itemsCount = createComputed(function() {
@@ -301,29 +424,51 @@ mylib.utils.collections = (function(window, $) {
 
             if (duration >= actualDelay) {
                 setTimeout(function() {
-                    self.currentPage.showItems( _pageList.current.pageId, 
-                                                _pageList.current.startIndex, 
-                                                $(_collectionContainerId).height() );
+                    self.currentPage.showItems(_pageNav.current.pageId,
+                            _pageNav.current.startIndex,
+                            $(_collectionContainerId).height());
                 }, actualDelay);
 
                 _lastShow = nowTime;
             }
         };
-
+        /*
+         * navigate to next page
+         */
         self.showNext = function() {
             console.log("<showNext>");
-            _pageList.moveNext(self.currentPage.visibleRange.to() + 1);
+            _pageNav.moveNext(self.currentPage.nextStart());
             self.show(app_defaults.resize_delay);
         };
+        /*
+         * can navigate to next ?
+         */
+        self.hasNext = createComputed(function() {
+            var r = self.currentPage.visibleRange.to() < (self.availableItems.length - 1);
+            return r;
 
+        }, self);
+        /*
+         * navigate to previous page
+         */
         self.showPrev = function() {
             console.log("<showPrev>");
-            
-            _pageList.movePrev();
+
+            _pageNav.movePrev();
             self.show(app_defaults.resize_delay);
         };
-
+        /*
+         * can navigate to previous ?
+         */
+        self.hasPrev = createComputed(function() {
+            var r = self.currentPage.visibleRange.from() > 0;
+            return r;
+        }, self);
     }
+
+    /*
+     * what my module exports to outside world
+     */
 
     var module = {
         CollectionViewer: DynamicPager,
