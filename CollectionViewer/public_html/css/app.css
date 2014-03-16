@@ -46,6 +46,7 @@ html,body {
 }
 
 .collection-view .list-container {
+    overflow: auto; /*for debuggin*/
     overflow: hidden;
     height: 100%;
     border-bottom: solid 1px gray;
@@ -63,6 +64,7 @@ html,body {
     overflow: auto;
     border: solid #309dd4 1px;
     border-radius: 5px;
+    padding: 0 5px 0 5px;
 }
 
 .collection-view .item-visible {

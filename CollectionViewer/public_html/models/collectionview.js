@@ -50,7 +50,7 @@ mylib.utils.collections = (function(window, $) {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: 0.65
+        value: 0.75
     });
 
     Object.defineProperty(app_defaults, "item_visible_class", {
@@ -86,6 +86,12 @@ mylib.utils.collections = (function(window, $) {
         };
     }
 
+    Array.prototype.clear = function() {
+        while (this.length > 0) {
+            this.pop();
+        }
+    };
+
     function createObservable(initialValue) {
         return ko.observable(initialValue);
     }
@@ -108,18 +114,24 @@ mylib.utils.collections = (function(window, $) {
     function ItemContainer(id, model, idPrefix) {
         var self = this;
 
+        self.id = id - 1;
         self.itemId = idPrefix + "-item-" + id;
         self.model = model;
         self.desiredHeight = createObservable(app_defaults.item_container_height);
-        self.actualHeight = createObservable(0);
+        self.actualHeight = createObservable("0px");
 
         var _defaultHeight = 0;
         var _isVisible = true;
         var _elem = null;
+        var _loaded = false;
 
         function getElem() {
-            if (!_elem) {
+            if (!_elem || !_loaded) {
                 _elem = $("#" + self.itemId);
+                var h = _elem.height();
+                if (h) {
+                    _loaded = true;
+                }
             }
             return _elem;
         }
@@ -201,27 +213,88 @@ mylib.utils.collections = (function(window, $) {
      * @param {type} idPrefix
      * @returns {undefined}
      */
-    function ItemsPage(items) {
+    function ItemsRenderer(availableItems) {
 
         var self = this;
 
-        self.availableItems = items;
         self.pageIndex = createObservable(1);
-        self.visibleRange = new ItemsRange(0, items.length - 1);
+        self.visibleRange = new ItemsRange(0, availableItems.length - 1);
 
-        self.visibleItems = createComputed(function() {
-            var start = self.visibleRange.from();
-            var r = [];
-            for(var ix = start; ix < self.availableItems.length; ix ++ ){
-                r.push( self.availableItems[ix] );
-            }
-            return r;
-        }, self);
+        self.visibleItems = createObservableArray();
 
         self.nextStart = function() {
             var r = self.visibleRange.to() + 1;
             return r;
         };
+
+        function PagedItemRenderer(page, containerHeight) {
+
+            var me = this;
+            var _currentHeight = 0;
+
+            me.renderItem = function(anItem, ix) {
+
+                var idealHeight = anItem.getIdealHeight();
+
+                if (!idealHeight || idealHeight === 0) {
+                    anItem.setAutoHeight();
+                    idealHeight = anItem.getIdealHeight();
+                }
+
+                var itemHeight = 0;
+                var remaining_height = 0;
+
+                itemHeight = idealHeight + app_defaults.x_margin;
+                remaining_height = containerHeight - _currentHeight;
+                _currentHeight += itemHeight;
+
+                if (_currentHeight < containerHeight) {
+                    setTimeout(function() {
+                        anItem.show();
+                        anItem.setAutoHeight();
+                    }, 150);
+                    self.visibleRange.to(ix + 1);
+                    page.endIndex = ix;
+                    return true;
+                } else {
+
+                    var remaining_heigh_factor = (remaining_height / itemHeight);
+
+                    if (remaining_heigh_factor >= app_defaults.x_shrink_factor) {
+                        console.log(String.format("item [{0}] will be shrinked."), anItem.itemId);
+                        anItem.setHeight(remaining_height - app_defaults.x_margin);
+                        setTimeout(function() {
+                            anItem.show();
+                        }, 150);
+                        self.visibleRange.to(ix + 1);
+                        page.endIndex = ix;
+                        return true;
+
+                    }
+                    else {
+                        console.log(String.format("item [{0}] exceeds container height.", anItem.itemId));
+                        if (!anItem.isVisible()) {
+                            return false;
+                        } else {
+                            anItem.hide();
+                        }
+                    }
+                }
+
+            };
+        }
+
+        function clearVisibleItems() {
+            while ( self.visibleItems().length > 0 ) {
+                self.visibleItems().pop();
+            }
+        }
+
+        function removeTail(itemId) {
+            self.visibleItems.remove(function(item) {
+                return item.id >= itemId;
+            });
+        }
         /*
          * Renders items for the current page starting from a given array slice index
          * @param {type} pageId
@@ -229,82 +302,89 @@ mylib.utils.collections = (function(window, $) {
          * @param {type} containerHeight
          * @returns {Number}
          */
-        self.showItems = function(page, containerHeight) {
-            var currentHeight = 0.0;
-            var lastIndex = 0;
+        self.renderPage = function(page, containerHeight, lastPage) {
 
-            if (self.visibleRange.from() !== page.startIndex) {
-                for (var ix = page.startIndex; ix <= page.endIndex; ix++) {
-                    self.availableItems[ix].hide();
+            clearVisibleItems();
+
+            var itemRenderer = new PagedItemRenderer(page, containerHeight);
+
+            for (var ix = page.startIndex; ix < availableItems.length; ix++) {
+
+                var currentIndex = ix;
+                var currentItem = availableItems[currentIndex];
+
+                currentItem.hide();
+                self.visibleItems.push(currentItem);
+
+                if (itemRenderer.renderItem(currentItem, currentIndex)) {
+                    currentItem.show();
+                } else {
+                    currentItem.hide();
+                    self.visibleItems.pop();
+                    break;
                 }
-
             }
+        };
 
-            self.pageIndex(page.pageId);
-            self.visibleRange.from(page.startIndex);
+        self.resizePage = function(page, containerHeight) {
 
-            for (var ix = self.visibleRange.from(); ix < self.availableItems.length; ix++) {
-                lastIndex = 0;
-                var currentItem = self.availableItems[ix];
+            var itemRenderer = new PagedItemRenderer(page, containerHeight);
+            var allVisible = true;
+            var lastVisible = -1;
+            var currentLength = self.visibleItems().length;
 
-                function showCurrent(anItem) {
+            /*
+             * check if existing items can be rendered
+             * @type Number|@exp;self@pro;visibleItems@pro;length
+             */
+            for (var ix = 0; ix < currentLength; ix++) {
 
-                    var idealHeight = anItem.getIdealHeight();
+                var currentIndex = ix;
+                var currentItem = self.visibleItems()[currentIndex];
                     
-                    if (idealHeight === 0) {
-                        anItem.setInitialHeight();
-                        idealHeight = anItem.getIdealHeight();
-                    }
-                    
-                    var itemHeight = 0;
-                    var remaining_height = 0;
+                lastVisible = ix;
 
-                    itemHeight = idealHeight + app_defaults.x_margin;
-                    remaining_height = containerHeight - currentHeight;
-                    currentHeight += itemHeight;
-
-                    if (currentHeight < containerHeight) {
-                        setTimeout(function() {
-                            anItem.show();
-                            anItem.setAutoHeight();
-                        }, 150);
-                        self.visibleRange.to(ix);
-                        page.endIndex = ix;
-                        return true;
-                    } else {
-
-                        var remaining_heigh_factor = (remaining_height / itemHeight);
-
-                        if (remaining_heigh_factor >= app_defaults.x_shrink_factor) {
-                            console.log(String.format("item [{0}] will be shrinked."), anItem.itemId);
-                            anItem.setHeight(remaining_height - app_defaults.x_margin);
-                            setTimeout(function() {
-                                anItem.show();
-                            }, 150);
-                            self.visibleRange.to(ix);
-                            page.endIndex = ix;
-                            return true;
-
-                        }
-                        else {
-                            console.log(String.format("item [{0}] exceeds container height.", anItem.itemId));
-                            if (!anItem.isVisible()) {
-                                return false;
-                            } else {
-                                anItem.hide();
-                            }
-                        }
-                    }
-                }
-
-
-                if (!showCurrent(currentItem)) {
-                    lastIndex = ix - 1;
+                if (!itemRenderer.renderItem(currentItem, currentIndex)) {
+                    removeTail(ix);
+                    allVisible = false;
                     break;
                 }
             }
 
-            return lastIndex;
+            /*
+             * remove all those left
+             */
+            if ( (lastVisible > 0) && (! allVisible ) )  {
+
+                self.visibleItems.remove(function(item) {
+                    if (item.id >= lastVisible) {
+                        return true;
+                    }
+                });
+            }
+
+            /*
+             * if there is available space add more
+             */
+            if (allVisible) {
+                for (var ix = lastVisible + 1; ix < availableItems.length; ix++) {
+
+                    var currentIndex = ix;
+                    var currentItem = availableItems[currentIndex];
+
+                    currentItem.hide();
+                    self.visibleItems.push(currentItem);
+
+                    if (itemRenderer.renderItem(currentItem, currentIndex)) {
+                        currentItem.show();
+                    } else {
+                        currentItem.hide();
+                        self.visibleItems.pop();
+                        break;
+                    }
+
+                }
+            }
         };
     }
     /*
@@ -339,7 +419,7 @@ mylib.utils.collections = (function(window, $) {
         self.moveNext = function(startIndex) {
             if (self.canMoveNext()) {
                 _ix++;
-                _pageList[_ix] = startIndex;
+                _pageList[_ix].startIndex = startIndex;
             } else {
                 var pg = new Page(startIndex);
 
@@ -355,6 +435,7 @@ mylib.utils.collections = (function(window, $) {
 
         self.movePrev = function() {
             _ix--;
+            _pageList[_ix].endIndex = _pageList[_ix + 1].startIndex - 1;
         };
 
         self.canMovePrev = function() {
@@ -382,7 +463,7 @@ mylib.utils.collections = (function(window, $) {
             });
         }
 
-        self.currentPage = new ItemsPage(self.availableItems);
+        self.renderer = new ItemsRenderer(self.availableItems);
 
         self.itemsCount = createComputed(function() {
             var r = self.availableItems.length;
@@ -390,11 +471,11 @@ mylib.utils.collections = (function(window, $) {
         }, self);
 
         self.fromVisible = createComputed(function() {
-            return self.currentPage.visibleRange.from() + 1;
+            return self.renderer.visibleRange.from() + 1;
         }, self);
 
         self.toVisible = createComputed(function() {
-            return self.currentPage.visibleRange.to() + 1;
+            return self.renderer.visibleRange.to() + 1;
         }, self);
 
         console.log("current page loaded");
@@ -423,14 +504,45 @@ mylib.utils.collections = (function(window, $) {
             $('body').height(h);
         };
 
+        $(document).ready(function() {
+
+            $(window).resize(onResize);
+            $(window).on('scroll', onScroll);
+
+        });
+
+
+        var _lastResize = new Date();
+
+        /*
+         * called by 'resize' events
+         * @param {type} delay
+         * @returns {undefined}
+         */
+        function _resizePage(delay) {
+
+            var actualDelay = delay || 0;
+
+            var nowTime = new Date();
+            var duration = nowTime - _lastResize;
+
+            if (duration >= actualDelay) {
+                setTimeout(function() {
+                    self.renderer.resizePage(_pageNav.getCurrent(), _collectionElemt.height());
+                }, actualDelay);
+
+                _lastResize = nowTime;
+            }
+        }
+        ;
+
         function onResize(e) {
             console.log(e);
             setTimeout(function() {
                 syncHeight();
-                self.show(app_defaults.show_hide_delay);
+                _resizePage(app_defaults.show_hide_delay);
             }, app_defaults.resize_delay);
         }
-
 
         var lastScroll = 0;
 
@@ -441,43 +553,32 @@ mylib.utils.collections = (function(window, $) {
             if (currentScroll > lastScroll) {
                 setTimeout(function() {
                     syncHeight();
-                    self.show(app_defaults.show_hide_delay);
+                    _resizePage(app_defaults.show_hide_delay);
                 }, app_defaults.resize_delay);
             }
 
             lastScroll = currentScroll;
         }
-        ;
 
-        $(document).ready(function() {
-
-            $(window).resize(onResize);
-            $(window).on('scroll', onScroll);
-
-        });
-
-        // window.document.body.onresize = self._onResize;
-        var _lastShow = new Date();
 
         self.show = function(delay) {
 
             var actualDelay = delay || 0;
 
-            var nowTime = new Date();
-            var duration = nowTime - _lastShow;
-
-            if (duration >= actualDelay) {
-                setTimeout(function() {
-                    self.currentPage.showItems(_pageNav.getCurrent(), _collectionElemt.height());
-                }, actualDelay);
-
-                _lastShow = nowTime;
-            }
+            setTimeout(function() {
+                self.renderer.renderPage(_pageNav.getCurrent(), _collectionElemt.height());
+            }, actualDelay);
         };
 
-        function _showPage() {
+        /*
+         * Renders a complete page
+         * @param {type} currentPage
+         * @param {type} lastPage
+         * @returns {undefined}
+         */
+        function _renderPage(currentPage, lastPage) {
 
-            self.currentPage.showItems(_pageNav.getCurrent(), _collectionElemt.height());
+            self.renderer.renderPage(currentPage, _collectionElemt.height(), lastPage);
         }
         ;
         /*
@@ -485,14 +586,16 @@ mylib.utils.collections = (function(window, $) {
          */
         self.showNext = function() {
             console.log("<showNext>");
-            _pageNav.moveNext(self.currentPage.nextStart());
-            _showPage();
+
+            var lastPage = _pageNav.getCurrent();
+            _pageNav.moveNext(self.renderer.nextStart());
+            _renderPage(_pageNav.getCurrent(), lastPage);
         };
         /*
          * can navigate to next ?
          */
         self.hasNext = createComputed(function() {
-            var r = self.currentPage.visibleRange.to() < (self.availableItems.length - 1);
+            var r = self.renderer.visibleRange.to() < (self.availableItems.length - 1);
             return r;
 
         }, self);
@@ -502,14 +605,15 @@ mylib.utils.collections = (function(window, $) {
         self.showPrev = function() {
             console.log("<showPrev>");
 
+            var lastPage = _pageNav.getCurrent();
             _pageNav.movePrev();
-            _showPage();
+            _renderPage(_pageNav.getCurrent(), lastPage);
         };
         /*
          * can navigate to previous ?
          */
         self.hasPrev = createComputed(function() {
-            var r = self.currentPage.visibleRange.from() > 0;
+            var r = self.renderer.visibleRange.from() > 0;
 
             return r;
         }, self);

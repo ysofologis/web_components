@@ -25,13 +25,13 @@ and open the template in the editor.
                 </div>
                 <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" id="view-container" data-bind="style : { height: actualHeight }">
                     <div class="collection-view">
-                        <ul class="list-unstyled list-container" data-bind="template: { name: 'itemContainerTemplate', foreach: currentPage.visibleItems }">
+                        <ul class="list-unstyled list-container" data-bind="template: { name: 'itemContainerTemplate', foreach: renderer.visibleItems }">
 
                         </ul>
                         <div class="paging">
                             <div style="font-size:0.9em; margin-bottom: 5px;">
                                 <span>
-                                    Page: [<b data-bind="text: currentPage.pageIndex"></b>]
+                                    Page: [<b data-bind="text: renderer.pageIndex"></b>]
                                 </span>
                                 <span class="divider"></span>
                                 <span>
@@ -73,8 +73,7 @@ and open the template in the editor.
         <!-- == templates == -->
         <script type="text/html" id="itemContainerTemplate">
         <li>
-            <div class="item-container" 
-                 data-bind="template: {name: 'itemTemplate'}, attr: {id: itemId}, style: { height: desiredHeight }">
+            <div class="item-container" data-bind="template: {name: 'itemTemplate'}, attr: {id: itemId}, style: { height: desiredHeight }">
             </div>
         </li>
     </script>
