@@ -399,12 +399,6 @@ mylib.utils.collections = (function (window, $) {
         }
 
 
-        function clearArray(items) {
-            while (items.length > 0) {
-                items.pop();
-            }
-        }
-
         function getNext(dataSource, ix) {
             // TODO: get current item through paging
             return new kendo.observable(dataSource.at(ix));
@@ -427,7 +421,6 @@ mylib.utils.collections = (function (window, $) {
             var ix = page.startIndex;
 
             while (ix < dataSource.total()) {
-                var currentIndex = ix;
                 var currentItem = getNext(dataSource, ix);
 
                 if (!currentItem) {
@@ -453,7 +446,7 @@ mylib.utils.collections = (function (window, $) {
                     self.visibleItems.set(itemContainer);
                 } else {
                     self.visibleItems.remove(function (i) {
-                        return i == itemContainer.itemId;
+                        return i === itemContainer.itemId;
                     });
                     itemContainer.dispose();
                     break;
