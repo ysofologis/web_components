@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+<head>
+    <title>Testing a dynamic collection viewer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="js/modernizr.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+
+</head>
+<body>
+
+    <div class="container-fluid full-height" id="main">
+        <div id="main-layout" class="row full-height">
+        </div>
+        <div id="footer">
+
+        </div>
+    </div>
+
+    <!-- == templates == -->
+    <!-- == main layout == -->
+    <script id="main-layout-template" type="text/x-kendo-layout">
+        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8  full-height">
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4  full-height">
+            <div id="collection-view-container" class="full-height"></div>
+        </div>
+    </script>
+
+
+    <!-- == collection view == -->
+    <script id="collection-view-template" type="text/x-kendo-layout">
+        <div class="collection-view full-height">
+            <ul class="list-unstyled list-container full-height"></ul>
+            <div class="paging">
+                <div style="font-size:0.9em; margin-bottom: 5px;">
+                    <span>
+                        Page: [<b class="page-index"></b>]
+                    </span>
+                    <span class="divider"></span>
+                    <span>
+                        Items: [<b class="items-count"></b>]
+                    </span>
+                    <span class="divider"></span>
+                    <span>
+                        From: [<b class="visible-from"></b>]
+                    </span>
+                    <span class="divider"></span>
+                    <span>
+                        To: [<b class="visible-to"></b>]
+                    </span>
+                </div>
+                <div class="row" style="margin-right: 10px;">
+                    <div class="col-md-8"></div>
+                    <div class="col-md-2" style="text-align: right">
+                        <button class="btn btn-link show-prev">
+                            Previous
+                        </button>
+                    </div>
+                    <div class="col-md-2" style="text-align: right">
+                        <button class="btn btn-link show-next">
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- == item container == -->
+    <script type="text/x-kendo-layout" id="item-container-template">
+        <li>
+            <div class="item-container" data-template="item-template">
+            </div>
+        </li>
+    </script>
+
+    <script type="text/x-kendo-layout" id="item-template">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <span data-bind="text: model.header"></span>
+                <span class="divider"></span>
+                <span>Desired:</span>
+                <span data-bind="text: desiredHeight"></span>
+                <span class="divider"></span>
+                <span>Actual:</span>
+                <span data-bind="text: actualHeight"></span>
+            </div>
+            <div class="panel-body" data-bind="text: model.text">
+
+            </div>
+        </div>
+    </script>
+
+    <!-- == dependencies == -->
+    <script src="js/underscore.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <!--
+    <script src="js/knockout.js"></script>
+        -->
+    <script src="js/kendo.all.min.js"></script>
+
+    <script src="models/collectionview.js"></script>
+
+    <script type="text/javascript">
+
+        function createItem(header, text, lines) {
+            var item = { header: header, text: "" };
+
+            for (var ix = 0; ix < lines; ix++) {
+                item.text += text + "\n";
+            }
+
+            return item;
+        }
+
+        var collectionItems = [
+            createItem('01. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+            createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf\n 456547547thjyuiyuifghg δφγυηρυτρτ ', 1),
+            createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+            createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+            createItem('05. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+            createItem('06. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+            createItem('07. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+            createItem('08. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+            createItem('09. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+            createItem('10. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+            createItem('11. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+            createItem('12. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+            createItem('13. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+            createItem('14. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+            createItem('15. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3)
+        ];
+
+        var dataSource = new kendo.data.DataSource({
+            data: collectionItems,
+        });
+        var appDefaults = mylib.utils.collections.defaults;
+
+        appDefaults.zero_opacity = 100;
+
+        var mainLayout = new kendo.Layout("main-layout-template", { model: null });
+        $("#main-layout").html(mainLayout.render());
+       
+        var collectionViewer = new mylib.utils.collections.createCollectionViewer("#main",
+                                                "#collection-view-container",
+                                                "item-template",
+                                                dataSource,
+                                                "my-collection");
+        /*
+
+        collectionViewer.show();
+        */
+
+    </script>
+
+</body>
+
+</html>
