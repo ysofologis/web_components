@@ -365,6 +365,8 @@ mylib.utils.collections = (function (window, $) {
 
                 if (!alreadyLoaded) {
                     renderModel(anItem);
+                } else {
+                    anItem.setHeight("auto");
                 }
 
                 var actualHeight = anItem.getHeight();
