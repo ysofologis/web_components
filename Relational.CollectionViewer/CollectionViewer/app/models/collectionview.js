@@ -185,7 +185,6 @@ mylib.utils.collections = (function (window, $) {
         self.itemId = idPrefix + "-item-" + id;
         self.listItemId = String.format("{0}-container", self.itemId);
         self.model = model;
-        self.desiredHeight = new AttributeBoundField("#" + self.itemId, "height", app_defaults.item_container_height);
 
         var _defaultHeight = 0;
         var _isVisible = true;
@@ -231,7 +230,6 @@ mylib.utils.collections = (function (window, $) {
                 _isVisible = null;
                 _elem = null;
                 self.model = null;
-                self.desiredHeight = null;
                 $("#" + self.listItemId).remove();
                 _disposed = true;
             }
@@ -306,6 +304,9 @@ mylib.utils.collections = (function (window, $) {
         };
 
         self.clear = function () {
+            for (var k in self.map) {
+                self.map[k].dispose();
+            }
             self.map = {};
         };
 
@@ -593,14 +594,6 @@ mylib.utils.collections = (function (window, $) {
             $('body').height(h);
         };
 
-        $(document).ready(function () {
-
-            $(window).resize(onResize);
-            $(window).on('scroll', onScroll);
-
-        });
-
-
         var _lastResize = new Date();
 
         /*
@@ -679,23 +672,40 @@ mylib.utils.collections = (function (window, $) {
         /*
          * navigate to next page
          */
-        self.showNext = function () {
+        function showNext() {
             console.log("<showNext>");
 
             var lastPage = _pageNav.getCurrent();
-            _pageNav.moveNext(self.renderer.nextStart());
+            _pageNav.moveNext(lastPage.endIndex + 1);
             _renderPage(_pageNav.getCurrent(), lastPage);
         };
         /*
          * navigate to previous page
          */
-        self.showPrev = function () {
+        function showPrev() {
             console.log("<showPrev>");
 
             var lastPage = _pageNav.getCurrent();
             _pageNav.movePrev();
             _renderPage(_pageNav.getCurrent(), lastPage);
         };
+
+        /* event handler binding */
+        $(document).ready(function () {
+
+            $(window).resize(onResize);
+            $(window).on('scroll', onScroll);
+
+            $(collectionContainerId + " .collection-view .paging .show-next").click(function () {
+                showNext();
+            });
+
+            $(collectionContainerId + " .collection-view .paging .show-prev").click(function () {
+                showPrev();
+            });
+        });
+
+
     }
 
     /*
