@@ -106,6 +106,21 @@ mylib.utils.collections = (function (window, $) {
         }
     };
 
+    function createUUID() {
+        // http://www.ietf.org/rfc/rfc4122.txt
+        var s = [];
+        var hexDigits = "0123456789abcdef";
+        for (var i = 0; i < 36; i++) {
+            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+        }
+        s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        s[8] = s[13] = s[18] = s[23] = "-";
+
+        var uuid = s.join("");
+        return uuid;
+    }
+
     function createObservable(initialValue) {
         if (typeof initialValue != 'undefined') {
             return initialValue;
@@ -410,7 +425,7 @@ mylib.utils.collections = (function (window, $) {
          * @param {type} containerHeight
          * @returns {Number}
          */
-        function tryRenderPage(page, containerHeight, lastPage, updatePaging) {
+        function tryRenderPage(page, containerHeight, lastPage, updatePagingCounters, renderingCompleted) {
 
             if (lastPage) {
                 self.visibleItems.clear();
@@ -442,7 +457,7 @@ mylib.utils.collections = (function (window, $) {
                     }, 150);
                     self.visibleRange.to.set(ix + 1);
                     page.endIndex = ix;
-                    updatePaging();
+                    updatePagingCounters();
                     self.visibleItems.set(itemContainer);
                 } else {
                     self.visibleItems.remove(function (i) {
@@ -454,14 +469,18 @@ mylib.utils.collections = (function (window, $) {
 
                 ix++;
             }
+
+            if (renderingCompleted) {
+                renderingCompleted();
+            }
         };
 
-        self.renderPage = function (page, containerHeight, lastPage, updatePaging) {
-            tryRenderPage(page, containerHeight, lastPage, updatePaging);
+        self.renderPage = function (page, containerHeight, lastPage, updatePagingCounters, renderingCompleted) {
+            tryRenderPage(page, containerHeight, lastPage, updatePagingCounters, renderingCompleted);
         };
 
-        self.resizePage = function (page, containerHeight, updatePaging) {
-            tryRenderPage(page, containerHeight, null, updatePaging);
+        self.resizePage = function (page, containerHeight, updatePagingCounters, renderingCompleted) {
+            tryRenderPage(page, containerHeight, null, updatePagingCounters, renderingCompleted);
         };
 
     }
@@ -520,6 +539,13 @@ mylib.utils.collections = (function (window, $) {
         self.canMovePrev = function () {
             return (_ix > 0);
         };
+
+        self.reset = function () {
+            _pageList = [];
+            _ix = 0;
+
+            _pageList.push(new Page(0));
+        };
     }
 
     /*
@@ -538,9 +564,9 @@ mylib.utils.collections = (function (window, $) {
         _collectionView.render($(collectionContainerId));
 
         var _collectionElem = $(collectionContainerId);
-
-        self.actualHeight = new AttributeBoundField(collectionContainerId + " .collection-view", "height");
-        self.actualHeight.set("100%");
+        var _listElem = $(collectionContainerId + " .collection-view .list-container");
+        var _btnNext = $(collectionContainerId + " .collection-view .paging .show-next");
+        var _btnPrev = $(collectionContainerId + " .collection-view .paging .show-prev");
 
         self.renderer = new ItemsRenderer(collectionContainerId, _dataSource, itemTemplate, collectionName);
 
@@ -560,11 +586,30 @@ mylib.utils.collections = (function (window, $) {
         console.log("current page loaded");
 
 
-        function updatePaging() {
+        function updatePagingCounters() {
             self.itemsCount.update();
             self.fromVisible.update();
             self.toVisible.update();
         }
+
+        function pageRenderingCompleted() {
+            _btnPrev.attr("disabled", "disabled");
+            _btnNext.attr("disabled", "disabled");
+
+            var pg = _pageNav.getCurrent();
+
+            var totalItems = dataSource.total();
+
+            if (pg.endIndex < (totalItems-1)) {
+                _btnNext.removeAttr("disabled");
+            }
+
+            if (pg.pageId > 1) {
+                _btnPrev.removeAttr("disabled");
+            }
+        }
+
+
         /*
          self.actualHeight.subscribe(function(newValue) {
          console.log(newValue);
@@ -574,10 +619,8 @@ mylib.utils.collections = (function (window, $) {
         function syncHeight() {
             var h = $(_pageContainerId).height();
             _collectionElem.height(h);
-
             return h;
         }
-        ;
 
         /**
          * only for testing
@@ -605,7 +648,7 @@ mylib.utils.collections = (function (window, $) {
 
             if (duration >= actualDelay) {
                 setTimeout(function () {
-                    self.renderer.resizePage(_pageNav.getCurrent(), getListHeight(), updatePaging);
+                    self.renderer.resizePage(_pageNav.getCurrent(), getListHeight(), updatePagingCounters, pageRenderingCompleted);
                 }, actualDelay);
 
                 _lastResize = nowTime;
@@ -637,19 +680,20 @@ mylib.utils.collections = (function (window, $) {
             lastScroll = currentScroll;
         }
 
-
         function getListHeight() {
-            var r = $(collectionContainerId + " .collection-view .list-container").height();
-
+            var r = _listElem.height();
             return r;
         }
 
         self.show = function (delay) {
-
             var actualDelay = delay || 0;
+            _pageNav.reset();
+
+            _btnPrev.attr("disabled", "disabled");
+            _btnNext.attr("disabled", "disabled");
 
             setTimeout(function () {
-                self.renderer.renderPage(_pageNav.getCurrent(), getListHeight(), null, updatePaging);
+                self.renderer.renderPage(_pageNav.getCurrent(), getListHeight(), null, updatePagingCounters, pageRenderingCompleted);
             }, actualDelay);
         };
 
@@ -660,10 +704,8 @@ mylib.utils.collections = (function (window, $) {
          * @returns {undefined}
          */
         function _renderPage(currentPage, lastPage) {
-
-            self.renderer.renderPage(currentPage, getListHeight(), lastPage, updatePaging);
+            self.renderer.renderPage(currentPage, getListHeight(), lastPage, updatePagingCounters, pageRenderingCompleted);
         }
-        ;
         /*
          * navigate to next page
          */
@@ -691,16 +733,14 @@ mylib.utils.collections = (function (window, $) {
             $(window).resize(onResize);
             $(window).on('scroll', onScroll);
 
-            $(collectionContainerId + " .collection-view .paging .show-next").click(function () {
+            _btnNext.click(function () {
                 showNext();
             });
 
-            $(collectionContainerId + " .collection-view .paging .show-prev").click(function () {
+            _btnPrev.click(function () {
                 showPrev();
             });
         });
-
-
     }
 
     /*
@@ -708,7 +748,8 @@ mylib.utils.collections = (function (window, $) {
      */
 
     var module = {
-        createCollectionViewer: function (pageContainerId, collectionContainerId, itemTemplate, dataSource, collectionName) {
+        createCollectionViewer: function (pageContainerId, collectionContainerId, itemTemplate, dataSource) {
+            var collectionName = "my_collection_" + createUUID();
             return new DynamicPager(pageContainerId, collectionContainerId, itemTemplate, dataSource, collectionName);
         },
         defaults: app_defaults
