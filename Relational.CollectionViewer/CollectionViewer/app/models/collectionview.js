@@ -88,6 +88,20 @@ mylib.utils.collections = (function (window, $) {
         value: "100%"
     });
 
+    Object.defineProperty(app_defaults, "item_container_show_delay", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: 150
+    });
+
+    Object.defineProperty(app_defaults, "item_container_dispose_delay", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: 750
+    });
+
     if (!String.format) {
         String.format = function (format) {
             var args = Array.prototype.slice.call(arguments, 1);
@@ -231,21 +245,24 @@ mylib.utils.collections = (function (window, $) {
         };
 
         self.show = function () {
-            getElem().removeClass(app_defaults.item_hidden_class).addClass(app_defaults.item_visible_class);
+            getElem().addClass(app_defaults.item_visible_class).removeClass(app_defaults.item_hidden_class);
+            // 1000, "easeOutBounce"
             _isVisible = true;
         };
 
-        self.hide = function () {
-            getElem().removeClass(app_defaults.item_visible_class).addClass(app_defaults.item_hidden_class);
+        self.hide = function (callback) {
+            getElem().addClass(app_defaults.item_hidden_class).removeClass(app_defaults.item_visible_class);
             _isVisible = false;
         };
 
         self.dispose = function () {
             if (!_disposed) {
-                _isVisible = null;
                 _elem = null;
-                self.model = null;
-                $("#" + self.listItemId).remove();
+                if (_isVisible) {
+                    self.hide();
+                    self.model = null;
+                    $("#" + self.listItemId).remove();
+                }
                 _disposed = true;
             }
         };
@@ -369,7 +386,7 @@ mylib.utils.collections = (function (window, $) {
 
             function renderModel(item) {
 
-                var containerHtml = String.format("<li id='{0}'><div id='{1}' class='item-container'></div></li>", item.listItemId, item.itemId);
+                var containerHtml = String.format("<li id='{0}'><div id='{1}' class='item-container {2}'></div></li>", item.listItemId, item.itemId, app_defaults.item_hidden_class);
                 _ul.append(containerHtml);
 
                 var modelView = new kendo.View(itemTemplate, { model: item.model });
@@ -452,9 +469,7 @@ mylib.utils.collections = (function (window, $) {
                 }
 
                 if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
-                    setTimeout(function () {
-                        itemContainer.show();
-                    }, 150);
+                    itemContainer.show();
                     self.visibleRange.to.set(ix + 1);
                     page.endIndex = ix;
                     updatePagingCounters();
