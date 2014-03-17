@@ -48,11 +48,11 @@ html,body {
 }
 
 
-
 .collection-view {
     background: rgba(128,128,128,0.2);
     border-radius: 7px;
     padding-bottom: 75px;
+    height: 100%;
 }
 
 .collection-view .list-container {
@@ -60,11 +60,14 @@ html,body {
     overflow: hidden;
     border-bottom: solid 1px gray;
     padding: 5px;
+    height: 100%;
 }
 
 .collection-view .list-container > li {
     margin: 5px 0px 5px 0px;
     padding: 0px 5px 0 5px;
+    overflow: hidden;
+    height: auto;
 }
 
 .collection-view .item-container {
@@ -73,7 +76,7 @@ html,body {
     overflow: auto;
     border: solid #309dd4 1px;
     border-radius: 5px;
-    padding: 0 5px 0 5px;
+    padding: 5px 5px 5px 5px;
 }
 
 .collection-view .item-visible {

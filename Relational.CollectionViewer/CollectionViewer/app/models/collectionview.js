@@ -7,7 +7,7 @@
 var mylib = mylib || {};
 mylib.utils = mylib.utils || {};
 
-mylib.utils.collections = (function(window, $) {
+mylib.utils.collections = (function (window, $) {
 
     var app_defaults = {};
 
@@ -60,6 +60,13 @@ mylib.utils.collections = (function(window, $) {
         value: 0.75
     });
 
+    Object.defineProperty(app_defaults, "x_shrink_min_height", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: 150,
+    });
+
     Object.defineProperty(app_defaults, "item_visible_class", {
         enumerable: false,
         configurable: false,
@@ -82,18 +89,18 @@ mylib.utils.collections = (function(window, $) {
     });
 
     if (!String.format) {
-        String.format = function(format) {
+        String.format = function (format) {
             var args = Array.prototype.slice.call(arguments, 1);
-            return format.replace(/{(\d+)}/g, function(match, number) {
+            return format.replace(/{(\d+)}/g, function (match, number) {
                 return typeof args[number] !== 'undefined'
                         ? args[number]
                         : match
-                        ;
+                ;
             });
         };
     }
 
-    Array.prototype.clear = function() {
+    Array.prototype.clear = function () {
         while (this.length > 0) {
             this.pop();
         }
@@ -135,7 +142,7 @@ mylib.utils.collections = (function(window, $) {
 
         var _field = new BoundField(selector);
         var _func = func;
-       
+
         self.update = function () {
             var r = _func();
             _field.set(r);
@@ -148,7 +155,7 @@ mylib.utils.collections = (function(window, $) {
         var self = this;
         var _elem = $(selector);
         var _attr = attr;
-        
+
         self.get = function () {
             var r = _elem.css(_attr);
             return r;
@@ -174,16 +181,18 @@ mylib.utils.collections = (function(window, $) {
     function ItemContainer(id, model, idPrefix) {
         var self = this;
 
-        self.id = id - 1;
+        self.id = id;
         self.itemId = idPrefix + "-item-" + id;
+        self.listItemId = String.format("{0}-container", self.itemId);
         self.model = model;
-        self.desiredHeight = createObservable(app_defaults.item_container_height);
-        self.actualHeight = createObservable("0px");
+        self.desiredHeight = new AttributeBoundField("#" + self.itemId, "height", app_defaults.item_container_height);
 
         var _defaultHeight = 0;
         var _isVisible = true;
         var _elem = null;
+        var _containerElem = null;
         var _loaded = false;
+        var _disposed = false;
 
         function getElem() {
             if (!_elem || !_loaded) {
@@ -196,63 +205,51 @@ mylib.utils.collections = (function(window, $) {
             return _elem;
         }
 
-        self.getInitialHeight = function() {
-            if (_defaultHeight === 0) {
-                _defaultHeight = getElem().height();
+        function getContainerElem() {
+            if (!_containerElem) {
+                _containerElem = $("#" + self.listItemId);
             }
-            return _defaultHeight;
+            return _containerElem;
         }
 
-        self.getIdealHeight = function() {
-
-            if (self.desiredHeight === app_defaults.item_container_height) {
-                var h = getElem().height();
-                return h;
-            } else {
-                return self.getInitialHeight();
-            }
-
-        };
-
-        self.isVisible = function() {
+        self.isVisible = function () {
             return _isVisible;
         };
 
-        self.show = function() {
+        self.show = function () {
             getElem().removeClass(app_defaults.item_hidden_class).addClass(app_defaults.item_visible_class);
             _isVisible = true;
-            self.actualHeight = (getElem().height() + "px");
-            self.getInitialHeight();
         };
 
-        self.hide = function() {
+        self.hide = function () {
             getElem().removeClass(app_defaults.item_visible_class).addClass(app_defaults.item_hidden_class);
             _isVisible = false;
         };
 
-        self.setHeight = function(newHeight) {
-            var h = getElem().height();
+        self.dispose = function () {
+            if (!_disposed) {
+                _isVisible = null;
+                _elem = null;
+                self.model = null;
+                self.desiredHeight = null;
+                $("#" + self.listItemId).remove();
+                _disposed = true;
+            }
+        };
+
+        self.getHeight = function () {
+            var h = getContainerElem().height();
+            return h;
+        };
+
+        self.setHeight = function (newHeight) {
+            var h = getContainerElem().height();
 
             if (_defaultHeight === 0) {
                 _defaultHeight = h;
             }
 
-            self.desiredHeight = (newHeight + "px");
-        };
-
-        self.resetHeight = function() {
-            if (_defaultHeight > 0) {
-                self.desiredHeight = (_defaultHeight + "px");
-            }
-        };
-
-        self.setAutoHeight = function() {
-            self.desiredHeight = (app_defaults.item_container_height);
-            _elem.height(app_defaults.item_container_height);
-        };
-
-        self.setInitialHeight = function() {
-            self.desiredHeight = (_defaultHeight + "px");
+            getContainerElem().height(newHeight);
         };
     }
 
@@ -272,15 +269,63 @@ mylib.utils.collections = (function(window, $) {
         self.to.set(to);
     }
 
-    // ItemsRange.prototype = new kendo.observable;
 
+    function VisibleItems() {
+        var self = this;
+
+        self.map = {};
+
+        self.size = function () {
+            return Object.keys(self.map).length;
+        };
+
+        self.exists = function (itemId) {
+            var r = self.map.hasOwnProperty(itemId)
+            return r;
+        };
+
+        self.get = function (itemId) {
+            if (self.exists(itemId)) {
+                return self.map[itemId];
+            } else {
+                return null;
+            }
+        };
+
+        self.getById = function (id) {
+            for (var itemId in self.map) {
+                if (self.map[itemId].id == id) {
+                    return self.map[itemId];
+                }
+            }
+            return null;
+        };
+
+        self.set = function (anItem) {
+            self.map[anItem.itemId] = anItem;
+        };
+
+        self.clear = function () {
+            self.map = {};
+        };
+
+        self.remove = function (compare_func) {
+            for (var itemId in self.map) {
+                if (compare_func(itemId)) {
+                    var item = self.map[itemId];
+                    item.dispose();
+                    delete self.map[itemId];
+                }
+            }
+        };
+    }
     /*
      * How many items on page
      * @param {type} items
      * @param {type} idPrefix
      * @returns {undefined}
      */
-    function ItemsRenderer(collectionContainerId, dataSource) {
+    function ItemsRenderer(collectionContainerId, dataSource, itemTemplate, collectionName) {
 
         var self = this;
 
@@ -291,10 +336,12 @@ mylib.utils.collections = (function(window, $) {
             self.visibleRange.to.set(dataSource.total());
         });
 
-        // self.visibleItems = new kendo.data.ObservableArray([]);
-        self.visibleItems = [];
+        var _ul = $(collectionContainerId + " .collection-view .list-container");
 
-        self.nextStart = function() {
+        // self.visibleItems = new kendo.data.ObservableArray([]);
+        self.visibleItems = new VisibleItems();
+
+        self.nextStart = function () {
             var r = self.visibleRange.to.get() + 1;
             return r;
         };
@@ -304,52 +351,44 @@ mylib.utils.collections = (function(window, $) {
             var me = this;
             var _currentHeight = 0;
 
-            me.renderItem = function(anItem, ix) {
+            function renderModel(item) {
 
-                var idealHeight = anItem.getIdealHeight();
+                var containerHtml = String.format("<li id='{0}'><div id='{1}' class='item-container'></div></li>", item.listItemId, item.itemId);
+                _ul.append(containerHtml);
 
-                if (!idealHeight || idealHeight === 0) {
-                    anItem.setAutoHeight();
-                    idealHeight = anItem.getIdealHeight();
+                var modelView = new kendo.View(itemTemplate, { model: item.model });
+                modelView.render($("#" + item.itemId));
+            }
+
+            me.tryRenderItem = function (anItem, alreadyLoaded) {
+
+                if (!alreadyLoaded) {
+                    renderModel(anItem);
                 }
+
+                var actualHeight = anItem.getHeight();
 
                 var itemHeight = 0;
                 var remaining_height = 0;
 
-                itemHeight = idealHeight + app_defaults.x_margin;
+                itemHeight = actualHeight + app_defaults.x_margin;
                 remaining_height = containerHeight - _currentHeight;
                 _currentHeight += itemHeight;
 
                 if (_currentHeight < containerHeight) {
-                    setTimeout(function() {
-                        anItem.show();
-                        anItem.setAutoHeight();
-                    }, 150);
-                    self.visibleRange.setTo(ix + 1);
-                    page.endIndex = ix;
                     return true;
                 } else {
 
-                    var remaining_heigh_factor = (remaining_height / itemHeight);
+                    // var remaining_heigh_factor = (remaining_height / itemHeight);
 
-                    if (remaining_heigh_factor >= app_defaults.x_shrink_factor) {
+                    if (remaining_height >= app_defaults.x_shrink_min_height) {
                         console.log(String.format("item [{0}] will be shrinked."), anItem.itemId);
                         anItem.setHeight(remaining_height - app_defaults.x_margin);
-                        setTimeout(function() {
-                            anItem.show();
-                        }, 150);
-                        self.visibleRange.setTo(ix + 1);
-                        page.endIndex = ix;
                         return true;
-
                     }
                     else {
                         console.log(String.format("item [{0}] exceeds container height.", anItem.itemId));
-                        if (!anItem.isVisible()) {
-                            return false;
-                        } else {
-                            anItem.hide();
-                        }
+                        return false;
                     }
                 }
 
@@ -358,15 +397,14 @@ mylib.utils.collections = (function(window, $) {
 
 
         function clearArray(items) {
-            while ( items.length > 0 ) {
+            while (items.length > 0) {
                 items.pop();
             }
         }
 
-        function removeTail(items, itemId) {
-            items.remove(function(item) {
-                return item.id >= itemId;
-            });
+        function getNext(dataSource, ix) {
+            // TODO: get current item through paging
+            return new kendo.observable(dataSource.at(ix));
         }
         /*
          * Renders items for the current page starting from a given array slice index
@@ -375,105 +413,61 @@ mylib.utils.collections = (function(window, $) {
          * @param {type} containerHeight
          * @returns {Number}
          */
-        self.renderPage = function(page, containerHeight, lastPage) {
+        function tryRenderPage(page, containerHeight, lastPage, updatePaging) {
 
-            var currentItems = self.getVisibleItems();
-
-            clearArray(currentItems);
+            if (lastPage) {
+                self.visibleItems.clear();
+            }
 
             var itemRenderer = new PagedItemRenderer(page, containerHeight);
 
-            /*
-            for (var ix = page.startIndex; ix < availableItems.length; ix++) {
+            var ix = page.startIndex;
 
+            while (ix < dataSource.total()) {
                 var currentIndex = ix;
-                var currentItem = availableItems[currentIndex];
+                var currentItem = getNext(dataSource, ix);
 
-                // currentItem.hide();
-                self.visibleItems.push(currentItem);
+                if (!currentItem) {
+                    break;
+                }
 
-                if (itemRenderer.renderItem(currentItem, currentIndex)) {
-                    currentItem.show();
+                var itemContainer = self.visibleItems.getById(ix);
+                var alreadyLoaded = false;
+
+                if (!itemContainer) {
+                    itemContainer = new ItemContainer(ix, currentItem, collectionName);
                 } else {
-                    currentItem.hide();
-                    self.visibleItems.pop();
+                    alreadyLoaded = true;
+                }
+
+                if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
+                    setTimeout(function () {
+                        itemContainer.show();
+                    }, 150);
+                    self.visibleRange.to.set(ix + 1);
+                    page.endIndex = ix;
+                    updatePaging();
+                    self.visibleItems.set(itemContainer);
+                } else {
+                    self.visibleItems.remove(function (i) {
+                        return i == itemContainer.itemId;
+                    });
+                    itemContainer.dispose();
                     break;
                 }
-            }
-            */
 
-            for (var ix = 0; ix < availableItems.length; ix++) {
-                var currentItem = availableItems[ix];
-                currentItems.push(currentItem);
-                currentItem.show();
+                ix++;
             }
         };
 
-        self.resizePage = function (page, containerHeight) {
+        self.renderPage = function (page, containerHeight, lastPage, updatePaging) {
+            tryRenderPage(page, containerHeight, lastPage, updatePaging);
         };
 
-
-        self.resizePage_ = function(page, containerHeight) {
-
-            var itemRenderer = new PagedItemRenderer(page, containerHeight);
-            var allVisible = true;
-            var lastVisible = -1;
-            var currentLength = self.visibleItems.length;
-
-            /*
-             * check if existing items can be rendered
-             * @type Number|@exp;self@pro;visibleItems@pro;length
-             */
-
-            for (var ix = 0; ix < currentLength; ix++) {
-
-                var currentIndex = ix;
-                var currentItem = self.visibleItems[currentIndex];
-                    
-                lastVisible = ix;
-
-                if (!itemRenderer.renderItem(currentItem, currentIndex)) {
-                    removeTail(ix);
-                    allVisible = false;
-                    break;
-                }
-            }
-
-            /*
-             * remove all those left
-             */
-            if ( (lastVisible > 0) && (! allVisible ) )  {
-
-                self.visibleItems.remove(function(item) {
-                    if (item.id >= lastVisible) {
-                        return true;
-                    }
-                });
-            }
-
-            /*
-             * if there is available space add more
-             */
-            if (allVisible) {
-                for (var ix = lastVisible + 1; ix < availableItems.length; ix++) {
-
-                    var currentIndex = ix;
-                    var currentItem = availableItems[currentIndex];
-
-                    currentItem.hide();
-                    self.visibleItems.push(currentItem);
-
-                    if (itemRenderer.renderItem(currentItem, currentIndex)) {
-                        currentItem.show();
-                    } else {
-                        currentItem.hide();
-                        self.visibleItems.pop();
-                        break;
-                    }
-
-                }
-            }
+        self.resizePage = function (page, containerHeight, updatePaging) {
+            tryRenderPage(page, containerHeight, null, updatePaging);
         };
+
     }
 
     /*
@@ -501,11 +495,11 @@ mylib.utils.collections = (function(window, $) {
 
         _pageList.push(new Page(0));
 
-        self.getCurrent = function() {
+        self.getCurrent = function () {
             return _pageList[_ix];
         };
 
-        self.moveNext = function(startIndex) {
+        self.moveNext = function (startIndex) {
             if (self.canMoveNext()) {
                 _ix++;
                 _pageList[_ix].startIndex = startIndex;
@@ -518,16 +512,16 @@ mylib.utils.collections = (function(window, $) {
             }
         };
 
-        self.canMoveNext = function() {
+        self.canMoveNext = function () {
             return (_ix < (_pageList.length - 1));
         };
 
-        self.movePrev = function() {
+        self.movePrev = function () {
             _ix--;
             _pageList[_ix].endIndex = _pageList[_ix + 1].startIndex - 1;
         };
 
-        self.canMovePrev = function() {
+        self.canMovePrev = function () {
             return (_ix > 0);
         };
     }
@@ -552,9 +546,9 @@ mylib.utils.collections = (function(window, $) {
         self.actualHeight = new AttributeBoundField(collectionContainerId + " .collection-view", "height");
         self.actualHeight.set("100%");
 
-        self.renderer = new ItemsRenderer(collectionContainerId, _dataSource);
+        self.renderer = new ItemsRenderer(collectionContainerId, _dataSource, itemTemplate, collectionName);
 
-        self.itemsCount = new ComputedBoundField(collectionContainerId + " .paging .items-count" ,function() {
+        self.itemsCount = new ComputedBoundField(collectionContainerId + " .paging .items-count", function () {
             var r = _dataSource.total();
             return r;
         }).update();
@@ -569,6 +563,12 @@ mylib.utils.collections = (function(window, $) {
 
         console.log("current page loaded");
 
+
+        function updatePaging() {
+            self.itemsCount.update();
+            self.fromVisible.update();
+            self.toVisible.update();
+        }
         /*
          self.actualHeight.subscribe(function(newValue) {
          console.log(newValue);
@@ -577,7 +577,7 @@ mylib.utils.collections = (function(window, $) {
 
         function syncHeight() {
             var h = $(_pageContainerId).height();
-            self.actualHeight = (h + "px");
+            _collectionElem.height(h);
 
             return h;
         }
@@ -587,13 +587,13 @@ mylib.utils.collections = (function(window, $) {
          * only for testing
          * @returns {undefined}
          */
-        self.increaseBodySize = function() {
+        self.increaseBodySize = function () {
             var h = $('body').height();
             h += h * 0.10;
             $('body').height(h);
         };
 
-        $(document).ready(function() {
+        $(document).ready(function () {
 
             $(window).resize(onResize);
             $(window).on('scroll', onScroll);
@@ -616,8 +616,8 @@ mylib.utils.collections = (function(window, $) {
             var duration = nowTime - _lastResize;
 
             if (duration >= actualDelay) {
-                setTimeout(function() {
-                    self.renderer.resizePage(_pageNav.getCurrent(), _collectionElem.height());
+                setTimeout(function () {
+                    self.renderer.resizePage(_pageNav.getCurrent(), getListHeight(), updatePaging);
                 }, actualDelay);
 
                 _lastResize = nowTime;
@@ -627,7 +627,7 @@ mylib.utils.collections = (function(window, $) {
 
         function onResize(e) {
             console.log(e);
-            setTimeout(function() {
+            setTimeout(function () {
                 syncHeight();
                 _resizePage(app_defaults.show_hide_delay);
             }, app_defaults.resize_delay);
@@ -640,7 +640,7 @@ mylib.utils.collections = (function(window, $) {
             var currentScroll = $(window).scrollTop();
             // is this 'scroll-down' ?
             if (currentScroll > lastScroll) {
-                setTimeout(function() {
+                setTimeout(function () {
                     syncHeight();
                     _resizePage(app_defaults.show_hide_delay);
                 }, app_defaults.resize_delay);
@@ -650,12 +650,18 @@ mylib.utils.collections = (function(window, $) {
         }
 
 
-        self.show = function(delay) {
+        function getListHeight() {
+            var r = $(collectionContainerId + " .collection-view .list-container").height();
+
+            return r;
+        }
+
+        self.show = function (delay) {
 
             var actualDelay = delay || 0;
 
-            setTimeout(function() {
-                self.renderer.renderPage(_pageNav.getCurrent(), _collectionElem.height());
+            setTimeout(function () {
+                self.renderer.renderPage(_pageNav.getCurrent(), getListHeight(), null, updatePaging);
             }, actualDelay);
         };
 
@@ -667,13 +673,13 @@ mylib.utils.collections = (function(window, $) {
          */
         function _renderPage(currentPage, lastPage) {
 
-            self.renderer.renderPage(currentPage, _collectionElem.height(), lastPage);
+            self.renderer.renderPage(currentPage, getListHeight(), lastPage, updatePaging);
         }
         ;
         /*
          * navigate to next page
          */
-        self.showNext = function() {
+        self.showNext = function () {
             console.log("<showNext>");
 
             var lastPage = _pageNav.getCurrent();
@@ -683,7 +689,7 @@ mylib.utils.collections = (function(window, $) {
         /*
          * navigate to previous page
          */
-        self.showPrev = function() {
+        self.showPrev = function () {
             console.log("<showPrev>");
 
             var lastPage = _pageNav.getCurrent();

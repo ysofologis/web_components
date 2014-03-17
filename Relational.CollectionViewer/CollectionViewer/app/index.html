@@ -77,25 +77,13 @@ and open the template in the editor.
     </script>
 
     <!-- == item container == -->
-    <script type="text/x-kendo-layout" id="item-container-template">
-        <li>
-            <div class="item-container" data-template="item-template">
-            </div>
-        </li>
-    </script>
 
     <script type="text/x-kendo-layout" id="item-template">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <span data-bind="text: model.header"></span>
-                <span class="divider"></span>
-                <span>Desired:</span>
-                <span data-bind="text: desiredHeight"></span>
-                <span class="divider"></span>
-                <span>Actual:</span>
-                <span data-bind="text: actualHeight"></span>
+                <span data-bind="text: header"></span>
             </div>
-            <div class="panel-body" data-bind="text: model.text">
+            <div class="panel-body" data-bind="text: text">
 
             </div>
         </div>
@@ -116,11 +104,9 @@ and open the template in the editor.
 
         function createItem(header, text, lines) {
             var item = { header: header, text: "" };
-
             for (var ix = 0; ix < lines; ix++) {
                 item.text += text + "\n";
             }
-
             return item;
         }
 
@@ -157,10 +143,7 @@ and open the template in the editor.
                                                 "item-template",
                                                 dataSource,
                                                 "my-collection");
-        /*
-
         collectionViewer.show();
-        */
 
     </script>
 
