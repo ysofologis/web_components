@@ -64,7 +64,7 @@ mylib.utils.collections = (function (window, $) {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: 150,
+        value: 100,
     });
 
     Object.defineProperty(app_defaults, "item_visible_class", {
@@ -431,10 +431,53 @@ mylib.utils.collections = (function (window, $) {
         }
 
 
-        function getNext(dataSource, ix) {
-            // TODO: get current item through paging
-            return new kendo.observable(dataSource.at(ix));
+        function getNext(dataSource, ix, callback) {
+
+            var currentIndex = ix;
+            var currentModel = null;
+            var dataLen = dataSource.total();
+
+            if (ix < dataLen) {
+                var dataView = dataSource.view();
+
+                if (ix < dataView.length) {
+                    var item = dataView[ix];
+                    currentModel = item;
+
+                    if (!(currentModel instanceof kendo.observable)) {
+                        currentModel = new kendo.observable(item);
+                    }
+
+                    callback(currentIndex, currentModel);
+
+                } else {
+
+                    var dataPageSize = dataSource.pageSize;
+                    var dataPage = dataLen / dataPageSize;
+
+                    dataSource.query({ page: dataPage, pageSize: dataPageSize }, function () {
+
+                        var dataView = dataSource.view();
+
+                        if (ix < dataView.length) {
+                            var item = dataView[ix];
+                            currentModel = item;
+
+                            if (!(currentModel instanceof kendo.observable)) {
+                                currentModel = new kendo.observable(item);
+                            }
+
+                            callback(currentIndex, currentModel);
+                        }
+
+                    });
+                }
+            }
+            else {
+                callback(currentIndex, currentModel);
+            }
         }
+
         /*
          * Renders items for the current page starting from a given array slice index
          * @param {type} pageId
@@ -451,42 +494,63 @@ mylib.utils.collections = (function (window, $) {
             var itemRenderer = new PagedItemRenderer(page, containerHeight);
 
             var ix = page.startIndex;
+            var shouldContinue = true;
+            var dataLen = dataSource.total();
 
-            while (ix < dataSource.total()) {
-                var currentItem = getNext(dataSource, ix);
+            while (ix < dataLen) {
 
-                if (!currentItem) {
-                    break;
-                }
+                // 1. Async fetching depends on data source content
+                // 2. isolate current index inside callback to avoid invalid index value
+                getNext(dataSource, ix, function (currentIndex, currentModel) {
 
-                var itemContainer = self.visibleItems.getById(ix);
-                var alreadyLoaded = false;
+                    if (!shouldContinue) {
+                        return;
+                    }
 
-                if (!itemContainer) {
-                    itemContainer = new ItemContainer(ix, currentItem, collectionName);
-                } else {
-                    alreadyLoaded = true;
-                }
+                    if (!currentModel) {
+                        shouldContinue = false;
 
-                if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
-                    itemContainer.show();
-                    self.visibleRange.to.set(ix + 1);
-                    page.endIndex = ix;
-                    updatePagingCounters();
-                    self.visibleItems.set(itemContainer);
-                } else {
-                    self.visibleItems.remove(function (i) {
-                        return i === itemContainer.itemId;
-                    });
-                    itemContainer.dispose();
+                        if (renderingCompleted) {
+                            renderingCompleted();
+                        }
+
+                        return;
+                    }
+
+                    var itemContainer = self.visibleItems.getById(currentIndex);
+                    var alreadyLoaded = false;
+
+                    if (!itemContainer) {
+                        itemContainer = new ItemContainer(currentIndex, currentModel, collectionName);
+                    } else {
+                        alreadyLoaded = true;
+                    }
+
+                    if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
+                        itemContainer.show();
+                        self.visibleRange.to.set(currentIndex + 1);
+                        page.endIndex = currentIndex;
+                        updatePagingCounters();
+                        self.visibleItems.set(itemContainer);
+                    } else {
+                        self.visibleItems.remove(function (i) {
+                            return i === itemContainer.itemId;
+                        });
+                        itemContainer.dispose();
+                        shouldContinue = false;
+
+                        if (renderingCompleted) {
+                            renderingCompleted();
+                        }
+
+                    }
+                });
+
+                if (!shouldContinue) {
                     break;
                 }
 
                 ix++;
-            }
-
-            if (renderingCompleted) {
-                renderingCompleted();
             }
         };
 
@@ -615,7 +679,7 @@ mylib.utils.collections = (function (window, $) {
 
             var totalItems = dataSource.total();
 
-            if (pg.endIndex < (totalItems-1)) {
+            if (pg.endIndex < (totalItems - 1)) {
                 _btnNext.removeAttr("disabled");
             }
 
