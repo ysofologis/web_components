@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 
-var mylib = mylib || {};
-mylib.utils = mylib.utils || {};
+var relational = relational || {};
+relational.widgets = relational.widgets || {};
 
-mylib.utils.collections = (function (window, $) {
+relational.widgets.collectionviewer = (function (window, $) {
 
     var app_defaults = {};
 
@@ -133,18 +133,6 @@ mylib.utils.collections = (function (window, $) {
 
         var uuid = s.join("");
         return uuid;
-    }
-
-    function createObservable(initialValue) {
-        if (typeof initialValue != 'undefined') {
-            return initialValue;
-        } else {
-            return null;
-        }
-    }
-
-    function createObservableArray(initialData) {
-        return createObservable(initialData);
     }
 
     function BoundField(selector, val) {
@@ -369,10 +357,14 @@ mylib.utils.collections = (function (window, $) {
             self.visibleRange.to.set(dataSource.total());
         });
 
-        var _ul = $(collectionContainerId + " .collection-view .list-container");
+        var _ul = null;
 
         // self.visibleItems = new kendo.data.ObservableArray([]);
         self.visibleItems = new VisibleItems();
+
+        self.wrapElements = function () {
+            _ul = $(collectionContainerId + " .collection-view .list-container");
+        };
 
         self.nextStart = function () {
             var r = self.visibleRange.to.get() + 1;
@@ -627,6 +619,26 @@ mylib.utils.collections = (function (window, $) {
         };
     }
 
+
+    function includeScript(scriptId, scriptPath, callback) {
+        var scriptType = type = "text/x-kendo-layout";
+        var script = document.getElementById(scriptId);
+        if (!script) {
+
+            $.get(scriptPath).success(function (newhtml) {
+                    var script = document.createElement('script');
+                    script.type = scriptType;
+                    script.id = scriptId;
+                    script.text = newhtml;
+                    document.body.appendChild(script);
+                    callback();
+                } );
+
+        } else {
+            callback();
+        }
+    }
+
     /*
     Dynamic Pager
     */
@@ -639,13 +651,28 @@ mylib.utils.collections = (function (window, $) {
         var _pageNav = new PageNavigation();
         var _dataSource = dataSource;
 
-        var _collectionView = new kendo.View(app_defaults.collection_view_template, { model: null });
-        _collectionView.render($(collectionContainerId));
+        var _collectionView = null;
 
-        var _collectionElem = $(collectionContainerId);
-        var _listElem = $(collectionContainerId + " .collection-view .list-container");
-        var _btnNext = $(collectionContainerId + " .collection-view .paging .show-next");
-        var _btnPrev = $(collectionContainerId + " .collection-view .paging .show-prev");
+        var _collectionElem = null;
+        var _listElem = null;
+        var _btnNext = null;
+        var _btnPrev = null;
+
+        var _viewLoaded = false;
+        var _autoLoad = false;
+
+        function initView() {
+            _collectionView = new kendo.View(app_defaults.collection_view_template, { model: null });
+            _collectionView.render($(collectionContainerId));
+
+            _collectionElem = $(collectionContainerId);
+            _listElem = $(collectionContainerId + " .collection-view .list-container");
+            _btnNext = $(collectionContainerId + " .collection-view .paging .show-next");
+            _btnPrev = $(collectionContainerId + " .collection-view .paging .show-prev");
+
+            self.renderer.wrapElements();
+
+        };
 
         self.renderer = new ItemsRenderer(collectionContainerId, _dataSource, itemTemplate, collectionName);
 
@@ -764,7 +791,7 @@ mylib.utils.collections = (function (window, $) {
             return r;
         }
 
-        self.show = function (delay) {
+        function showView(delay) {
             var actualDelay = delay || 0;
             _pageNav.reset();
 
@@ -774,6 +801,15 @@ mylib.utils.collections = (function (window, $) {
             setTimeout(function () {
                 self.renderer.renderPage(_pageNav.getCurrent(), getListHeight(), null, updatePagingCounters, pageRenderingCompleted);
             }, actualDelay);
+
+        }
+
+        self.show = function (delay) {
+            if (_viewLoaded) {
+                showView(delay);
+            } else {
+                _autoLoad = true;
+            }
         };
 
         /*
@@ -809,15 +845,24 @@ mylib.utils.collections = (function (window, $) {
         /* event handler binding */
         $(document).ready(function () {
 
-            $(window).resize(onResize);
-            $(window).on('scroll', onScroll);
+            includeScript(app_defaults.collection_view_template, "templates/collection-view.html", function () {
+                initView();
 
-            _btnNext.click(function () {
-                showNext();
-            });
+                $(window).resize(onResize);
+                $(window).on('scroll', onScroll);
 
-            _btnPrev.click(function () {
-                showPrev();
+                _btnNext.click(function () {
+                    showNext();
+                });
+
+                _btnPrev.click(function () {
+                    showPrev();
+                });
+
+                if (_autoLoad) {
+                    showView();
+                }
+
             });
         });
     }

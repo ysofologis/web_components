@@ -14,6 +14,7 @@ and open the template in the editor.
 
     <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
     <link rel="stylesheet" type="text/css" href="css/app.css">
+    <link rel="stylesheet" type="text/css" href="css/collectionviewer.css">
 
 </head>
 <body>
@@ -35,48 +36,6 @@ and open the template in the editor.
             <div id="collection-view-container" class="full-height"></div>
         </div>
     </script>
-
-
-    <!-- == collection view == -->
-    <script id="collection-view-template" type="text/x-kendo-layout">
-        <div class="collection-view full-height">
-            <ul class="list-unstyled list-container full-height"></ul>
-            <div class="paging">
-                <div style="font-size:0.9em; margin-bottom: 5px;">
-                    <span>
-                        Page: [<b class="page-index"></b>]
-                    </span>
-                    <span class="divider"></span>
-                    <span>
-                        Items: [<b class="items-count"></b>]
-                    </span>
-                    <span class="divider"></span>
-                    <span>
-                        From: [<b class="visible-from"></b>]
-                    </span>
-                    <span class="divider"></span>
-                    <span>
-                        To: [<b class="visible-to"></b>]
-                    </span>
-                </div>
-                <div class="row" style="margin-right: 10px;">
-                    <div class="col-md-8"></div>
-                    <div class="col-md-2" style="text-align: right">
-                        <button class="btn btn-link show-prev">
-                            Previous
-                        </button>
-                    </div>
-                    <div class="col-md-2" style="text-align: right">
-                        <button class="btn btn-link show-next">
-                            Next
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </script>
-
-    <!-- == item container == -->
 
     <script type="text/x-kendo-layout" id="item-template">
         <div class="panel panel-default">
@@ -131,14 +90,15 @@ and open the template in the editor.
         var dataSource = new kendo.data.DataSource({
             data: collectionItems,
         });
-        var appDefaults = mylib.utils.collections.defaults;
+        var appDefaults = relational.widgets.collectionviewer.defaults;
 
+        // immutable !!
         appDefaults.zero_opacity = 100;
 
         var mainLayout = new kendo.Layout("main-layout-template", { model: null });
         $("#main-layout").html(mainLayout.render());
        
-        var collectionViewer = new mylib.utils.collections.createCollectionViewer("#main",
+        var collectionViewer = new relational.widgets.collectionviewer.createCollectionViewer("#main",
                                                 "#collection-view-container",
                                                 "item-template",
                                                 dataSource);
