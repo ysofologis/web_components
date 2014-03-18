@@ -50,7 +50,7 @@ relational.widgets.collectionviewer = (function (window, $) {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: 10
+        value: 15
     });
 
     Object.defineProperty(app_defaults, "x_shrink_factor", {
@@ -79,6 +79,13 @@ relational.widgets.collectionviewer = (function (window, $) {
         configurable: false,
         writable: false,
         value: "item-hidden"
+    });
+
+    Object.defineProperty(app_defaults, "item_shrunk_class", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: "shrunk"
     });
 
     Object.defineProperty(app_defaults, "item_container_height", {
@@ -140,7 +147,7 @@ relational.widgets.collectionviewer = (function (window, $) {
         var _elem = $(selector);
 
         self.get = function () {
-            var r = _elem.val();
+            var r = _elem.text();
             return r;
         };
 
@@ -209,6 +216,7 @@ relational.widgets.collectionviewer = (function (window, $) {
         var _containerElem = null;
         var _loaded = false;
         var _disposed = false;
+        var _shrunk = false;
 
         function getElem() {
             if (!_elem || !_loaded) {
@@ -233,8 +241,12 @@ relational.widgets.collectionviewer = (function (window, $) {
         };
 
         self.show = function () {
-            getElem().addClass(app_defaults.item_visible_class).removeClass(app_defaults.item_hidden_class);
+            getElem().addClass(app_defaults.item_visible_class).removeClass(app_defaults.item_hidden_class).removeClass(app_defaults.item_shrunk_class);
             // 1000, "easeOutBounce"
+            if (_shrunk) {
+                getElem().addClass(app_defaults.item_shrunk_class);
+                _shrunk = false;
+            } 
             _isVisible = true;
         };
 
@@ -260,7 +272,7 @@ relational.widgets.collectionviewer = (function (window, $) {
             return h;
         };
 
-        self.setHeight = function (newHeight) {
+        self.setHeight = function (newHeight, shrunk) {
             var h = getContainerElem().height();
 
             if (_defaultHeight === 0) {
@@ -268,6 +280,12 @@ relational.widgets.collectionviewer = (function (window, $) {
             }
 
             getContainerElem().height(newHeight);
+
+            if (shrunk) {
+                _shrunk = true;
+            } else {
+                _shrunk = false;
+            }
         };
     }
 
@@ -377,12 +395,17 @@ relational.widgets.collectionviewer = (function (window, $) {
             var _currentHeight = 0;
 
             function renderModel(item) {
-
-                var containerHtml = String.format("<li id='{0}'><div id='{1}' class='item-container {2}'></div></li>", item.listItemId, item.itemId, app_defaults.item_hidden_class);
+                var seeMoreText = "More ...";
+                var seeMoreHtml = String.format("<div class='pull-right see-more-link'><a href='javascript:void(0)'>{0}</a></div>", seeMoreText);
+                var containerHtml = String.format("<li id='{0}'><div id='{1}' class='item-container {2}'><div class='item-placeholder'></div>{3}</div></li>", item.listItemId, item.itemId, app_defaults.item_hidden_class, seeMoreHtml);
                 _ul.append(containerHtml);
 
                 var modelView = new kendo.View(itemTemplate, { model: item.model });
-                modelView.render($("#" + item.itemId));
+                modelView.render($("#" + item.itemId + " .item-placeholder"));
+
+                // $("#" + item.listItemId).append(seeMoreHtml);
+
+                var liText = $("#" + item.listItemId).html();
             }
 
             me.tryRenderItem = function (anItem, alreadyLoaded) {
@@ -410,7 +433,7 @@ relational.widgets.collectionviewer = (function (window, $) {
 
                     if (remaining_height >= app_defaults.x_shrink_min_height) {
                         console.log(String.format("item [{0}] will be shrinked."), anItem.itemId);
-                        anItem.setHeight(remaining_height - app_defaults.x_margin);
+                        anItem.setHeight(remaining_height - app_defaults.x_margin, true);
                         return true;
                     }
                     else {
@@ -543,6 +566,12 @@ relational.widgets.collectionviewer = (function (window, $) {
                 }
 
                 ix++;
+            }
+
+            if (ix == dataLen) {
+                if (renderingCompleted) {
+                    renderingCompleted();
+                }
             }
         };
 

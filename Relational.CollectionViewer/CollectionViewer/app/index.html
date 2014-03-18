@@ -42,7 +42,7 @@ and open the template in the editor.
             <div class="panel-heading">
                 <span data-bind="text: header"></span>
             </div>
-            <div class="panel-body" data-bind="text: text">
+            <div class="panel-body item-text" data-bind="text: text">
 
             </div>
         </div>
@@ -64,7 +64,7 @@ and open the template in the editor.
         function createItem(header, text, lines) {
             var item = { header: header, text: "" };
             for (var ix = 0; ix < lines; ix++) {
-                item.text += text + "\n";
+                item.text += ix + ": " + text + "\n";
             }
             return item;
         }
@@ -72,7 +72,7 @@ and open the template in the editor.
         var collectionItems = [
             createItem('01. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
             createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf\n 456547547thjyuiyuifghg δφγυηρυτρτ ', 1),
-            createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+            createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 15),
             createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
             createItem('05. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
             createItem('06. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),

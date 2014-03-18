@@ -24,11 +24,38 @@
     .collection-view .item-container {
         width: 100%;
         height: 100%;
-        overflow: auto;
+        overflow: hidden;
         border: solid #309dd4 1px;
         border-radius: 5px;
         padding: 5px 5px 5px 5px;
+        position: relative;
     }
+
+        .collection-view .item-container .item-placeholder {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            overflow: hidden;
+        }
+
+        .collection-view .item-container.shrunk .item-placeholder {
+            height: calc(100% - 25px);
+        }
+
+        .collection-view .item-container .see-more-link {
+            display: none;
+        }
+
+        .collection-view .item-container.shrunk .see-more-link {
+            border-top: solid 1px gray;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .collection-view .item-container.shrunk .item-text {
+        }
+
 
     .collection-view .item-visible {
         opacity: 1.0;

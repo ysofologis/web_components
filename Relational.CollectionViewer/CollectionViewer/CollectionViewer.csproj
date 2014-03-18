@@ -68,6 +68,7 @@
     <Content Include="app\index.html" />
     <Content Include="app\js\bootstrap.js" />
     <Content Include="app\js\groundwork.all.js" />
+    <Content Include="app\js\jquery.autoellipsis.js" />
     <Content Include="app\js\jquery.js" />
     <Content Include="app\js\kendo.all.min.js" />
     <Content Include="app\js\kendo.web.min.js" />
