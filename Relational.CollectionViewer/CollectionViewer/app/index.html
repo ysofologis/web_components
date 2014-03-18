@@ -100,8 +100,10 @@ and open the template in the editor.
        
         var collectionViewer = new relational.widgets.collectionviewer.createCollectionViewer("#main",
                                                 "#collection-view-container",
-                                                "item-template",
-                                                dataSource);
+                                                null,
+                                                null);
+
+        collectionViewer.load(dataSource, "item-template");
         collectionViewer.show();
 
     </script>

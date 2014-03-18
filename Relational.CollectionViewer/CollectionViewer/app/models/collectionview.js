@@ -246,7 +246,7 @@ relational.widgets.collectionviewer = (function (window, $) {
             if (_shrunk) {
                 getElem().addClass(app_defaults.item_shrunk_class);
                 _shrunk = false;
-            } 
+            }
             _isVisible = true;
         };
 
@@ -364,7 +364,7 @@ relational.widgets.collectionviewer = (function (window, $) {
      * @param {type} idPrefix
      * @returns {undefined}
      */
-    function ItemsRenderer(collectionContainerId, dataSource, itemTemplate, collectionName) {
+    function ItemsRenderer(collectionContainerId, collectionName) {
 
         var self = this;
 
@@ -376,12 +376,19 @@ relational.widgets.collectionviewer = (function (window, $) {
         });
 
         var _ul = null;
+        var _itemTemplate = null;
+        var _dataSource = null;
 
         // self.visibleItems = new kendo.data.ObservableArray([]);
         self.visibleItems = new VisibleItems();
 
         self.wrapElements = function () {
             _ul = $(collectionContainerId + " .collection-view .list-container");
+        };
+
+        self.setDataSource = function (dataSource, itemTemplate) {
+            _dataSource = dataSource;
+            _itemTemplate = itemTemplate;
         };
 
         self.nextStart = function () {
@@ -400,7 +407,7 @@ relational.widgets.collectionviewer = (function (window, $) {
                 var containerHtml = String.format("<li id='{0}'><div id='{1}' class='item-container {2}'><div class='item-placeholder'></div>{3}</div></li>", item.listItemId, item.itemId, app_defaults.item_hidden_class, seeMoreHtml);
                 _ul.append(containerHtml);
 
-                var modelView = new kendo.View(itemTemplate, { model: item.model });
+                var modelView = new kendo.View(_itemTemplate, { model: item.model });
                 modelView.render($("#" + item.itemId + " .item-placeholder"));
 
                 // $("#" + item.listItemId).append(seeMoreHtml);
@@ -510,13 +517,13 @@ relational.widgets.collectionviewer = (function (window, $) {
 
             var ix = page.startIndex;
             var shouldContinue = true;
-            var dataLen = dataSource.total();
+            var dataLen = _dataSource.total();
 
             while (ix < dataLen) {
 
                 // 1. Async fetching depends on data source content
                 // 2. isolate current index inside callback to avoid invalid index value
-                getNext(dataSource, ix, function (currentIndex, currentModel) {
+                getNext(_dataSource, ix, function (currentIndex, currentModel) {
 
                     if (!shouldContinue) {
                         return;
@@ -655,13 +662,13 @@ relational.widgets.collectionviewer = (function (window, $) {
         if (!script) {
 
             $.get(scriptPath).success(function (newhtml) {
-                    var script = document.createElement('script');
-                    script.type = scriptType;
-                    script.id = scriptId;
-                    script.text = newhtml;
-                    document.body.appendChild(script);
-                    callback();
-                } );
+                var script = document.createElement('script');
+                script.type = scriptType;
+                script.id = scriptId;
+                script.text = newhtml;
+                document.body.appendChild(script);
+                callback();
+            });
 
         } else {
             callback();
@@ -679,6 +686,7 @@ relational.widgets.collectionviewer = (function (window, $) {
         var _pageContainerId = pageContainerId;
         var _pageNav = new PageNavigation();
         var _dataSource = dataSource;
+        var _itemTemplate = itemTemplate;
 
         var _collectionView = null;
 
@@ -703,11 +711,14 @@ relational.widgets.collectionviewer = (function (window, $) {
 
         };
 
-        self.renderer = new ItemsRenderer(collectionContainerId, _dataSource, itemTemplate, collectionName);
+        self.renderer = new ItemsRenderer(collectionContainerId, collectionName);
+        self.renderer.setDataSource(dataSource, itemTemplate);
 
         self.itemsCount = new ComputedBoundField(collectionContainerId + " .paging .items-count", function () {
-            var r = _dataSource.total();
-            return r;
+            if (_dataSource) {
+                var r = _dataSource.total();
+                return r;
+            }
         }).update();
 
         self.fromVisible = new ComputedBoundField(collectionContainerId + " .paging .visible-from", function () {
@@ -733,7 +744,7 @@ relational.widgets.collectionviewer = (function (window, $) {
 
             var pg = _pageNav.getCurrent();
 
-            var totalItems = dataSource.total();
+            var totalItems = _dataSource.total();
 
             if (pg.endIndex < (totalItems - 1)) {
                 _btnNext.removeAttr("disabled");
@@ -841,6 +852,11 @@ relational.widgets.collectionviewer = (function (window, $) {
             }
         };
 
+        self.load = function (dataSource, itemTemplate) {
+            _dataSource = dataSource;
+            _itemTemplate = itemTemplate;
+            self.renderer.setDataSource(_dataSource, _itemTemplate);
+        };
         /*
          * Renders a complete page
          * @param {type} currentPage
