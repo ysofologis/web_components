@@ -961,7 +961,7 @@ relational.widgets.collectionviewer = (function (window, $) {
             
             // widgets/collectionviewer/templates
             // _scriptPath ??
-            var templateSrc = "templates/collection-view.html";
+            var templateSrc = _scriptPath.replace("/js", "") + "templates/collection-view.html";
             includeScript(app_defaults.collection_view_template, templateSrc, function () {
                 initView();
 

@@ -2,7 +2,7 @@
 .collection-view {
     background: rgba(128,128,128,0.2);
     border-radius: 7px;
-    padding-bottom: 75px;
+    padding-bottom: 30px;
     height: 100%;
 }
 
@@ -12,6 +12,7 @@
         border-bottom: solid 1px gray;
         padding: 5px;
         height: 100%;
+        margin-bottom: 10px;
     }
 
         .collection-view .list-container > li {
@@ -26,7 +27,7 @@
         height: 100%;
         overflow: hidden;
         border: solid #309dd4 1px; /* if debug */
-        border: none;
+        /*border: none*/;
         border-radius: 5px;
         padding: 5px 5px 5px 5px;
         position: relative;
@@ -48,10 +49,11 @@
         }
 
         .collection-view .item-container.shrunk .see-more-link {
-            border-top: solid 1px gray;
+            /*border-top: solid 1px gray;*/
             font-size: 12px;
             margin-top: 5px;
             display: block;
+            color : lightgray;
         }
 
         .collection-view .item-container.shrunk .item-text {
@@ -75,8 +77,8 @@
     }
 
     .collection-view .paging {
-        margin-left: 10px;
         font-size: 0.8em;
+        padding-bottom: 5px;
     }
 
         .collection-view .paging .debug-info {
