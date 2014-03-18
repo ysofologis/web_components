@@ -31,6 +31,7 @@ and open the template in the editor.
     <!-- == main layout == -->
     <script id="main-layout-template" type="text/x-kendo-layout">
         <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8  full-height">
+            <button onclick="loadCollection()">Load Collection</button>
         </div>
         <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4  full-height">
             <div id="collection-view-container" class="full-height"></div>
@@ -61,6 +62,9 @@ and open the template in the editor.
 
     <script type="text/javascript">
 
+        var _collectionViewer = new relational.widgets.collectionviewer.createCollectionViewer("#main", "#collection-view-container");
+        var _dataSource = null;
+
         function createItem(header, text, lines) {
             var item = { header: header, text: "" };
             for (var ix = 0; ix < lines; ix++) {
@@ -69,42 +73,43 @@ and open the template in the editor.
             return item;
         }
 
-        var collectionItems = [
-            createItem('01. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
-            createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf\n 456547547thjyuiyuifghg δφγυηρυτρτ ', 1),
-            createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 15),
-            createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
-            createItem('05. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
-            createItem('06. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
-            createItem('07. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
-            createItem('08. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
-            createItem('09. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
-            createItem('10. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
-            createItem('11. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
-            createItem('12. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
-            createItem('13. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
-            createItem('14. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
-            createItem('15. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3)
-        ];
+        window.loadCollection = function() {
+            _collectionViewer.load("#collection-view-container", _dataSource, "item-template");
+            _collectionViewer.show();
+        }
 
-        var dataSource = new kendo.data.DataSource({
-            data: collectionItems,
+        $(document).ready(function () {
+
+
+            var collectionItems = [
+                createItem('01. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+                createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf\n 456547547thjyuiyuifghg δφγυηρυτρτ ', 1),
+                createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 15),
+                createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+                createItem('05. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+                createItem('06. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+                createItem('07. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+                createItem('08. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+                createItem('09. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+                createItem('10. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
+                createItem('11. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+                createItem('12. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 5),
+                createItem('13. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
+                createItem('14. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
+                createItem('15. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3)
+            ];
+
+            _dataSource = new kendo.data.DataSource({
+                data: collectionItems,
+            });
+            var appDefaults = relational.widgets.collectionviewer.defaults;
+
+            // immutable !!
+            appDefaults.zero_opacity = 100;
+
+            var mainLayout = new kendo.Layout("main-layout-template", { model: null });
+            $("#main-layout").html(mainLayout.render());
         });
-        var appDefaults = relational.widgets.collectionviewer.defaults;
-
-        // immutable !!
-        appDefaults.zero_opacity = 100;
-
-        var mainLayout = new kendo.Layout("main-layout-template", { model: null });
-        $("#main-layout").html(mainLayout.render());
-       
-        var collectionViewer = new relational.widgets.collectionviewer.createCollectionViewer("#main",
-                                                "#collection-view-container",
-                                                null,
-                                                null);
-
-        collectionViewer.load(dataSource, "item-template");
-        collectionViewer.show();
 
     </script>
 

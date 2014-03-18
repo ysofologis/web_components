@@ -142,23 +142,37 @@ relational.widgets.collectionviewer = (function (window, $) {
         return uuid;
     }
 
+    function isUndefined(v) {
+        return typeof v == "undefined";
+    }
+
+    function setOrDefault(val, defaultVal) {
+        if (isUndefined(val)) {
+            return defaultVal;
+        } else {
+            return val;
+        }
+    }
+
     function BoundField(selector, val) {
         var self = this;
         var _elem = $(selector);
+        var _val = setOrDefault(val, "");
+
+        if (_val) {
+            _elem.text(_val);
+        }
 
         self.get = function () {
-            var r = _elem.text();
-            return r;
+            _val = _elem.text();
+            return _val;
         };
 
         self.set = function (newVal) {
-            _elem.text(newVal);
+            _val = setOrDefault(newVal, "");
+            _elem.text(_val);
             return self;
         };
-
-        if (typeof val != "undefined") {
-            self.set(val);
-        }
     };
 
     function ComputedBoundField(selector, func) {
@@ -170,7 +184,6 @@ relational.widgets.collectionviewer = (function (window, $) {
         self.update = function () {
             var r = _func();
             _field.set(r);
-
             return self;
         }
     }
@@ -371,10 +384,6 @@ relational.widgets.collectionviewer = (function (window, $) {
         self.pageIndex = new BoundField(collectionContainerId + " .paging .page-index", 0);
         self.visibleRange = new ItemsRange(collectionContainerId, 0, 0);
 
-        dataSource.fetch(function () {
-            self.visibleRange.to.set(dataSource.total());
-        });
-
         var _ul = null;
         var _itemTemplate = null;
         var _dataSource = null;
@@ -389,6 +398,13 @@ relational.widgets.collectionviewer = (function (window, $) {
         self.setDataSource = function (dataSource, itemTemplate) {
             _dataSource = dataSource;
             _itemTemplate = itemTemplate;
+
+            if (_dataSource) {
+                _dataSource.fetch(function () {
+                    self.visibleRange.to.set(dataSource.total());
+                });
+            }
+
         };
 
         self.nextStart = function () {
@@ -474,25 +490,28 @@ relational.widgets.collectionviewer = (function (window, $) {
 
                 } else {
 
-                    var dataPageSize = dataSource.pageSize;
-                    var dataPage = dataLen / dataPageSize;
+                    var dataPageSize = dataSource.pageSize();
+                    var dataPage = Math.ceil(dataLen / dataPageSize);
 
-                    dataSource.query({ page: dataPage, pageSize: dataPageSize }, function () {
+                    var data = dataSource.query({
+                        page: dataPage,
+                        pageSize: dataPageSize,
+                        serverPaging: true,
+                        serverSorting: true,
+                    });
 
-                        var dataView = dataSource.view();
+                    var dataView = dataSource.view();
 
-                        if (ix < dataView.length) {
-                            var item = dataView[ix];
-                            currentModel = item;
+                    if (ix < dataView.length) {
+                        var item = dataView[ix];
+                        currentModel = item;
 
-                            if (!(currentModel instanceof kendo.observable)) {
-                                currentModel = new kendo.observable(item);
-                            }
-
-                            callback(currentIndex, currentModel);
+                        if (!(currentModel instanceof kendo.observable)) {
+                            currentModel = new kendo.observable(item);
                         }
 
-                    });
+                        callback(currentIndex, currentModel);
+                    }
                 }
             }
             else {
@@ -509,85 +528,95 @@ relational.widgets.collectionviewer = (function (window, $) {
          */
         function tryRenderPage(page, containerHeight, lastPage, updatePagingCounters, renderingCompleted) {
 
-            if (lastPage) {
-                self.visibleItems.clear();
-            }
+            console.log(String.format("<tryRenderPage:{0}>", page.pageId));
 
-            var itemRenderer = new PagedItemRenderer(page, containerHeight);
+            _dataSource.fetch(function () {
+                if (lastPage) {
+                    self.visibleItems.clear();
+                }
 
-            var ix = page.startIndex;
-            var shouldContinue = true;
-            var dataLen = _dataSource.total();
+                var itemRenderer = new PagedItemRenderer(page, containerHeight);
 
-            while (ix < dataLen) {
+                var ix = page.startIndex;
+                var shouldContinue = true;
 
-                // 1. Async fetching depends on data source content
-                // 2. isolate current index inside callback to avoid invalid index value
-                getNext(_dataSource, ix, function (currentIndex, currentModel) {
+                var dataLen = _dataSource.total();
+
+                while (ix < dataLen) {
+
+                    // 1. Async fetching depends on data source content
+                    // 2. isolate current index inside callback to avoid invalid index value
+                    getNext(_dataSource, ix, function (currentIndex, currentModel) {
+
+                        if (!shouldContinue) {
+                            return;
+                        }
+
+                        if (!currentModel) {
+                            shouldContinue = false;
+
+                            if (renderingCompleted) {
+                                renderingCompleted();
+                            }
+
+                            return;
+                        }
+
+                        var itemContainer = self.visibleItems.getById(currentIndex);
+                        var alreadyLoaded = false;
+
+                        if (!itemContainer) {
+                            itemContainer = new ItemContainer(currentIndex, currentModel, collectionName);
+                        } else {
+                            alreadyLoaded = true;
+                        }
+
+                        if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
+                            itemContainer.show();
+                            self.visibleRange.to.set(currentIndex + 1);
+                            page.endIndex = currentIndex;
+                            updatePagingCounters();
+                            self.visibleItems.set(itemContainer);
+                        } else {
+                            self.visibleItems.remove(function (i) {
+                                return i === itemContainer.itemId;
+                            });
+                            itemContainer.dispose();
+                            shouldContinue = false;
+
+                            if (renderingCompleted) {
+                                renderingCompleted();
+                            }
+
+                        }
+                    });
 
                     if (!shouldContinue) {
-                        return;
+                        break;
                     }
 
-                    if (!currentModel) {
-                        shouldContinue = false;
-
-                        if (renderingCompleted) {
-                            renderingCompleted();
-                        }
-
-                        return;
-                    }
-
-                    var itemContainer = self.visibleItems.getById(currentIndex);
-                    var alreadyLoaded = false;
-
-                    if (!itemContainer) {
-                        itemContainer = new ItemContainer(currentIndex, currentModel, collectionName);
-                    } else {
-                        alreadyLoaded = true;
-                    }
-
-                    if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
-                        itemContainer.show();
-                        self.visibleRange.to.set(currentIndex + 1);
-                        page.endIndex = currentIndex;
-                        updatePagingCounters();
-                        self.visibleItems.set(itemContainer);
-                    } else {
-                        self.visibleItems.remove(function (i) {
-                            return i === itemContainer.itemId;
-                        });
-                        itemContainer.dispose();
-                        shouldContinue = false;
-
-                        if (renderingCompleted) {
-                            renderingCompleted();
-                        }
-
-                    }
-                });
-
-                if (!shouldContinue) {
-                    break;
+                    ix++;
                 }
 
-                ix++;
-            }
-
-            if (ix == dataLen) {
-                if (renderingCompleted) {
-                    renderingCompleted();
+                if (ix == dataLen) {
+                    if (renderingCompleted) {
+                        renderingCompleted();
+                    }
                 }
-            }
+            });
+
         };
 
         self.renderPage = function (page, containerHeight, lastPage, updatePagingCounters, renderingCompleted) {
-            tryRenderPage(page, containerHeight, lastPage, updatePagingCounters, renderingCompleted);
+            if (_dataSource) {
+                tryRenderPage(page, containerHeight, lastPage, updatePagingCounters, renderingCompleted);
+            }
         };
 
         self.resizePage = function (page, containerHeight, updatePagingCounters, renderingCompleted) {
-            tryRenderPage(page, containerHeight, null, updatePagingCounters, renderingCompleted);
+            if (_dataSource) {
+                tryRenderPage(page, containerHeight, null, updatePagingCounters, renderingCompleted);
+            }
         };
 
     }
@@ -655,6 +684,20 @@ relational.widgets.collectionviewer = (function (window, $) {
         };
     }
 
+    function getScriptPath() {
+        var scripts = document.getElementsByTagName('SCRIPT');
+        var path = '';
+        if (scripts && scripts.length > 0) {
+            for (var i in scripts) {
+                if (scripts[i].src && scripts[i].src.match(/\/collectionviewer\.js$/)) {
+                    path = scripts[i].src.replace(/(.*)\/collectionviewer\.js$/, '$1');
+                    break;
+                }
+            }
+        }
+        path = path.replace(location.protocol + "//" + location.host, "").substring(1);
+        return path;
+    }
 
     function includeScript(scriptId, scriptPath, callback) {
         var scriptType = type = "text/x-kendo-layout";
@@ -682,8 +725,9 @@ relational.widgets.collectionviewer = (function (window, $) {
 
         var self = this;
 
-        // var _collectionName = collectionName;
+        var _collectionName = collectionName;
         var _pageContainerId = pageContainerId;
+        var _collectionContainerId = collectionContainerId;
         var _pageNav = new PageNavigation();
         var _dataSource = dataSource;
         var _itemTemplate = itemTemplate;
@@ -698,39 +742,46 @@ relational.widgets.collectionviewer = (function (window, $) {
         var _viewLoaded = false;
         var _autoLoad = false;
 
-        function initView() {
-            _collectionView = new kendo.View(app_defaults.collection_view_template, { model: null });
-            _collectionView.render($(collectionContainerId));
 
-            _collectionElem = $(collectionContainerId);
-            _listElem = $(collectionContainerId + " .collection-view .list-container");
-            _btnNext = $(collectionContainerId + " .collection-view .paging .show-next");
-            _btnPrev = $(collectionContainerId + " .collection-view .paging .show-prev");
+        function initRenderer() {
+            self.renderer = new ItemsRenderer(_collectionContainerId, _collectionName);
+            self.renderer.setDataSource(dataSource, itemTemplate);
+
+            self.itemsCount = new ComputedBoundField(_collectionContainerId + " .paging .items-count", function () {
+                if (_dataSource) {
+                    var r = _dataSource.total();
+                    return r;
+                }
+            }).update();
+
+            self.fromVisible = new ComputedBoundField(_collectionContainerId + " .paging .visible-from", function () {
+                return self.renderer.visibleRange.from.get() + 1;
+            }).update();
+
+            self.toVisible = new ComputedBoundField(_collectionContainerId + " .paging .visible-to", function () {
+                return self.renderer.visibleRange.to.get() + 1;
+            }).update();
+        }
+
+        function initView() {
+            if (_collectionView) {
+                _collectionView.destroy();
+            }
+
+            _collectionView = new kendo.View(app_defaults.collection_view_template, { model: null });
+            _collectionView.render($(_collectionContainerId));
+
+            _collectionElem = $(_collectionContainerId);
+            _listElem = $(_collectionContainerId + " .collection-view .list-container");
+            _btnNext = $(_collectionContainerId + " .collection-view .paging .show-next");
+            _btnPrev = $(_collectionContainerId + " .collection-view .paging .show-prev");
 
             self.renderer.wrapElements();
+            _viewLoaded = true;
 
         };
 
-        self.renderer = new ItemsRenderer(collectionContainerId, collectionName);
-        self.renderer.setDataSource(dataSource, itemTemplate);
-
-        self.itemsCount = new ComputedBoundField(collectionContainerId + " .paging .items-count", function () {
-            if (_dataSource) {
-                var r = _dataSource.total();
-                return r;
-            }
-        }).update();
-
-        self.fromVisible = new ComputedBoundField(collectionContainerId + " .paging .visible-from", function () {
-            return self.renderer.visibleRange.from.get() + 1;
-        }).update();
-
-        self.toVisible = new ComputedBoundField(collectionContainerId + " .paging .visible-to", function () {
-            return self.renderer.visibleRange.to.get() + 1;
-        }).update();
-
-        console.log("current page loaded");
-
+        initRenderer();
 
         function updatePagingCounters() {
             self.itemsCount.update();
@@ -833,8 +884,9 @@ relational.widgets.collectionviewer = (function (window, $) {
 
         function showView(delay) {
             var actualDelay = delay || 0;
-            _pageNav.reset();
 
+            syncHeight();
+            _pageNav.reset();
             _btnPrev.attr("disabled", "disabled");
             _btnNext.attr("disabled", "disabled");
 
@@ -852,10 +904,24 @@ relational.widgets.collectionviewer = (function (window, $) {
             }
         };
 
-        self.load = function (dataSource, itemTemplate) {
+        self.load = function (collectionContainerId, dataSource, itemTemplate) {
+            _collectionContainerId = collectionContainerId;
             _dataSource = dataSource;
             _itemTemplate = itemTemplate;
+            initView();
+            initRenderer();
+            self.renderer.wrapElements();
             self.renderer.setDataSource(_dataSource, _itemTemplate);
+
+            _btnNext.click(function () {
+                showNext();
+            });
+
+            _btnPrev.click(function () {
+                showPrev();
+            });
+
+
         };
         /*
          * Renders a complete page
@@ -887,10 +953,16 @@ relational.widgets.collectionviewer = (function (window, $) {
             _renderPage(_pageNav.getCurrent(), lastPage);
         };
 
+        var _scriptPath = getScriptPath();
+
         /* event handler binding */
         $(document).ready(function () {
-
-            includeScript(app_defaults.collection_view_template, "templates/collection-view.html", function () {
+            console.log();
+            
+            // widgets/collectionviewer/templates
+            // _scriptPath ??
+            var templateSrc = "templates/collection-view.html";
+            includeScript(app_defaults.collection_view_template, templateSrc, function () {
                 initView();
 
                 $(window).resize(onResize);
@@ -919,7 +991,7 @@ relational.widgets.collectionviewer = (function (window, $) {
     var module = {
         createCollectionViewer: function (pageContainerId, collectionContainerId, itemTemplate, dataSource) {
             var collectionName = "my_collection_" + createUUID();
-            return new DynamicPager(pageContainerId, collectionContainerId, itemTemplate, dataSource, collectionName);
+            return new DynamicPager(pageContainerId, collectionContainerId, setOrDefault(itemTemplate, null), setOrDefault(dataSource, null), collectionName);
         },
         defaults: app_defaults
     };
