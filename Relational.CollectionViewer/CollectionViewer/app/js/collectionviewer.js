@@ -2,6 +2,8 @@
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
+ *
+ * DEPENDENCIES: jquery, kendo.web, spiner.js
  */
 
 var relational = relational || {};
@@ -109,6 +111,56 @@ relational.widgets.collectionviewer = (function (window, $) {
         value: 750
     });
 
+    Object.defineProperty(app_defaults, "min_viewer_height", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: 400
+    });
+
+
+    var utils = {
+
+        spinner_opts: {
+            lines: 13, // The number of lines to draw
+            length: 5, // The length of each line
+            width: 2, // The line thickness
+            radius: 6, // The radius of the inner circle
+            corners: 1, // Corner roundness (0..1)
+            rotate: 0, // The rotation offset
+            direction: 1, // 1: clockwise, -1: counterclockwise
+            color: '#000', // #rgb or #rrggbb or array of colors
+            speed: 1, // Rounds per second
+            trail: 60, // Afterglow percentage
+            shadow: false, // Whether to render a shadow
+            hwaccel: false, // Whether to use hardware acceleration
+            className: 'spinner', // The CSS class to assign to the spinner
+            zIndex: 2e9, // The z-index (defaults to 2000000000)
+            top: 'auto', // Top position relative to parent in px
+            left: 'auto' // Left position relative to parent in px
+        },
+
+        spinner: null,
+
+        showSpinner: function (containerId) {
+            if (!this.spinner) {
+                this.spinner = new Spinner(this.spinner_opts);
+            }
+            var spinnerContainer = $(containerId)[0];
+            this.spinner.spin(spinnerContainer);
+        },
+
+        hideSpinner: function (containerId) {
+            if (this.spinner) {
+                this.spinner.stop();
+            }
+        },
+    };
+
+    var default_config = {
+        seeMorePlacement: 'left'
+    };
+
     if (!String.format) {
         String.format = function (format) {
             var args = Array.prototype.slice.call(arguments, 1);
@@ -152,6 +204,19 @@ relational.widgets.collectionviewer = (function (window, $) {
         } else {
             return val;
         }
+    }
+
+    function merge(left, right) {
+        var result = {};
+
+        if (left) {
+            for (var attrname in left) { result[attrname] = left[attrname]; }
+        }
+        if (right) {
+            for (var attrname in right) { result[attrname] = right[attrname]; }
+        }
+
+        return result;
     }
 
     function BoundField(selector, val) {
@@ -208,99 +273,6 @@ relational.widgets.collectionviewer = (function (window, $) {
         }
 
     }
-    /*
-     * Contains an item from the input array
-     * @param {type} id
-     * @param {type} model
-     * @param {type} idPrefix
-     * @returns {undefined}
-     */
-    function ItemContainer(id, model, idPrefix) {
-        var self = this;
-
-        self.id = id;
-        self.itemId = idPrefix + "-item-" + id;
-        self.listItemId = String.format("{0}-container", self.itemId);
-        self.model = model;
-
-        var _defaultHeight = 0;
-        var _isVisible = true;
-        var _elem = null;
-        var _containerElem = null;
-        var _loaded = false;
-        var _disposed = false;
-        var _shrunk = false;
-
-        function getElem() {
-            if (!_elem || !_loaded) {
-                _elem = $("#" + self.itemId);
-                var h = _elem.height();
-                if (h) {
-                    _loaded = true;
-                }
-            }
-            return _elem;
-        }
-
-        function getContainerElem() {
-            if (!_containerElem) {
-                _containerElem = $("#" + self.listItemId);
-            }
-            return _containerElem;
-        }
-
-        self.isVisible = function () {
-            return _isVisible;
-        };
-
-        self.show = function () {
-            getElem().addClass(app_defaults.item_visible_class).removeClass(app_defaults.item_hidden_class).removeClass(app_defaults.item_shrunk_class);
-            // 1000, "easeOutBounce"
-            if (_shrunk) {
-                getElem().addClass(app_defaults.item_shrunk_class);
-                _shrunk = false;
-            }
-            _isVisible = true;
-        };
-
-        self.hide = function (callback) {
-            getElem().addClass(app_defaults.item_hidden_class).removeClass(app_defaults.item_visible_class);
-            _isVisible = false;
-        };
-
-        self.dispose = function () {
-            if (!_disposed) {
-                _elem = null;
-                if (_isVisible) {
-                    self.hide();
-                    self.model = null;
-                    $("#" + self.listItemId).remove();
-                }
-                _disposed = true;
-            }
-        };
-
-        self.getHeight = function () {
-            var h = getContainerElem().height();
-            return h;
-        };
-
-        self.setHeight = function (newHeight, shrunk) {
-            var h = getContainerElem().height();
-
-            if (_defaultHeight === 0) {
-                _defaultHeight = h;
-            }
-
-            getContainerElem().height(newHeight);
-
-            if (shrunk) {
-                _shrunk = true;
-            } else {
-                _shrunk = false;
-            }
-        };
-    }
 
     /*
      * visible items range
@@ -317,7 +289,6 @@ relational.widgets.collectionviewer = (function (window, $) {
         self.to = new BoundField(collectionContainerId + " .paging .visible-to");
         self.to.set(to);
     }
-
 
     function VisibleItems() {
         var self = this;
@@ -377,13 +348,14 @@ relational.widgets.collectionviewer = (function (window, $) {
      * @param {type} idPrefix
      * @returns {undefined}
      */
-    function ItemsRenderer(collectionContainerId, collectionName) {
+    function ItemsRenderer(collectionContainerId, collectionName, config) {
 
         var self = this;
 
         self.pageIndex = new BoundField(collectionContainerId + " .paging .page-index", 0);
         self.visibleRange = new ItemsRange(collectionContainerId, 0, 0);
 
+        var _config = config;
         var _ul = null;
         var _itemTemplate = null;
         var _dataSource = null;
@@ -412,6 +384,144 @@ relational.widgets.collectionviewer = (function (window, $) {
             return r;
         };
 
+        /*
+         * Contains an item from the input array
+         * @param {type} id
+         * @param {type} model
+         * @param {type} idPrefix
+         * @returns {undefined}
+         */
+        function ItemContainer(id, model, idPrefix) {
+            var self = this;
+
+            self.id = id;
+            self.itemId = idPrefix + "-item-" + id;
+            self.listItemId = String.format("{0}-container", self.itemId);
+            self.model = model;
+
+            var _defaultHeight = 0;
+            var _isVisible = true;
+            var _elem = null;
+            var _containerElem = null;
+            var _loaded = false;
+            var _disposed = false;
+            var _shrunk = false;
+            var _view = null;
+
+            function getElem() {
+                if (!_elem || !_loaded) {
+                    _elem = $("#" + self.itemId);
+                    var h = _elem.height();
+                    if (h) {
+                        _loaded = true;
+                    }
+                }
+                return _elem;
+            }
+
+            function getContainerElem() {
+                if (!_containerElem) {
+                    _containerElem = $("#" + self.listItemId);
+                }
+                return _containerElem;
+            }
+
+            self.isVisible = function () {
+                return _isVisible;
+            };
+
+            self.show = function () {
+                getElem().addClass(app_defaults.item_visible_class).removeClass(app_defaults.item_hidden_class).removeClass(app_defaults.item_shrunk_class);
+                // 1000, "easeOutBounce"
+                if (_shrunk) {
+                    getElem().addClass(app_defaults.item_shrunk_class);
+                    _shrunk = false;
+                }
+                _isVisible = true;
+            };
+
+            self.hide = function (callback) {
+                getElem().addClass(app_defaults.item_hidden_class).removeClass(app_defaults.item_visible_class);
+                _isVisible = false;
+            };
+
+            self.dispose = function () {
+                if (!_disposed) {
+                    _elem = null;
+                    if (_isVisible) {
+                        self.hide();
+                        self.model = null;
+
+                        $("#" + self.itemId + " .see-more-link").unbind('click');
+                        if (_view) {
+                            _view.destroy();
+                            _view = null;
+                        }
+                        $("#" + self.listItemId).remove();
+                    }
+                    _disposed = true;
+                }
+            };
+
+            self.setView = function (view, config) {
+                _view = view;
+
+                $("#" + self.itemId + " .see-more-link").click(function (e) {
+                    var htmlContent = $("#" + self.itemId + " .item-placeholder").html();
+                    getElem().popover({
+                        html: 'true',
+                        content: htmlContent,
+                        placement: function (context, source) {
+                            var position = $(collectionContainerId).offset();
+
+                            if (position.top > 500) {
+                                return "top";
+                            }
+
+                            if (position.left > 200) {
+                                return "left";
+                            }
+                            if (position.left < 200) {
+                                return "right";
+                            }
+                            if (position.top < 150) {
+                                return "bottom";
+                            }
+                            return "top";
+
+                        },
+                    });
+                });
+            };
+
+            self.getHeight = function () {
+                var h = getContainerElem().height();
+                return h;
+            };
+
+            self.setHeight = function (newHeight, shrunk) {
+                var h = getContainerElem().height();
+
+                if (_defaultHeight === 0) {
+                    _defaultHeight = h;
+                }
+
+                getContainerElem().height(newHeight);
+
+                if (shrunk) {
+                    _shrunk = true;
+                } else {
+                    _shrunk = false;
+                }
+            };
+        }
+
+        /*
+         * Renders a model on the list container
+         * @param {type} page
+         * @param {type} containerHeight
+         * @returns {undefined}
+         */
         function PagedItemRenderer(page, containerHeight) {
 
             var me = this;
@@ -426,7 +536,7 @@ relational.widgets.collectionviewer = (function (window, $) {
                 var modelView = new kendo.View(_itemTemplate, { model: item.model });
                 modelView.render($("#" + item.itemId + " .item-placeholder"));
 
-                // $("#" + item.listItemId).append(seeMoreHtml);
+                item.setView(modelView, _config);
 
                 var liText = $("#" + item.listItemId).html();
             }
@@ -468,6 +578,16 @@ relational.widgets.collectionviewer = (function (window, $) {
             };
         }
 
+        function fetchData(dataSource, callback) {
+            var dataView = dataSource.view();
+            var dataLen = dataSource.total();
+
+            if ((!dataView) || (dataView.length < dataLen) || (dataView.length == 0)) {
+                dataSource.fetch(callback);
+            } else {
+                callback();
+            }
+        }
 
         function getNext(dataSource, ix, callback) {
 
@@ -530,11 +650,11 @@ relational.widgets.collectionviewer = (function (window, $) {
 
             console.log(String.format("<tryRenderPage:{0}>", page.pageId));
 
-            _dataSource.fetch(function () {
-                if (lastPage) {
-                    self.visibleItems.clear();
-                }
+            if (lastPage) {
+                self.visibleItems.clear();
+            }
 
+            fetchData(_dataSource, function () {
                 var itemRenderer = new PagedItemRenderer(page, containerHeight);
 
                 var ix = page.startIndex;
@@ -547,11 +667,9 @@ relational.widgets.collectionviewer = (function (window, $) {
                     // 1. Async fetching depends on data source content
                     // 2. isolate current index inside callback to avoid invalid index value
                     getNext(_dataSource, ix, function (currentIndex, currentModel) {
-
                         if (!shouldContinue) {
                             return;
                         }
-
                         if (!currentModel) {
                             shouldContinue = false;
 
@@ -609,12 +727,14 @@ relational.widgets.collectionviewer = (function (window, $) {
 
         self.renderPage = function (page, containerHeight, lastPage, updatePagingCounters, renderingCompleted) {
             if (_dataSource) {
+                utils.showSpinner(collectionContainerId);
                 tryRenderPage(page, containerHeight, lastPage, updatePagingCounters, renderingCompleted);
             }
         };
 
         self.resizePage = function (page, containerHeight, updatePagingCounters, renderingCompleted) {
             if (_dataSource) {
+                utils.showSpinner(collectionContainerId);
                 tryRenderPage(page, containerHeight, null, updatePagingCounters, renderingCompleted);
             }
         };
@@ -721,7 +841,7 @@ relational.widgets.collectionviewer = (function (window, $) {
     /*
     Dynamic Pager
     */
-    function DynamicPager(pageContainerId, collectionContainerId, itemTemplate, dataSource, collectionName) {
+    function DynamicPager(pageContainerId, collectionContainerId, itemTemplate, dataSource, collectionName, config) {
 
         var self = this;
 
@@ -731,6 +851,7 @@ relational.widgets.collectionviewer = (function (window, $) {
         var _pageNav = new PageNavigation();
         var _dataSource = dataSource;
         var _itemTemplate = itemTemplate;
+        var _config = config;
 
         var _collectionView = null;
 
@@ -744,7 +865,7 @@ relational.widgets.collectionviewer = (function (window, $) {
 
 
         function initRenderer() {
-            self.renderer = new ItemsRenderer(_collectionContainerId, _collectionName);
+            self.renderer = new ItemsRenderer(_collectionContainerId, _collectionName, _config);
             self.renderer.setDataSource(dataSource, itemTemplate);
 
             self.itemsCount = new ComputedBoundField(_collectionContainerId + " .paging .items-count", function () {
@@ -804,6 +925,8 @@ relational.widgets.collectionviewer = (function (window, $) {
             if (pg.pageId > 1) {
                 _btnPrev.removeAttr("disabled");
             }
+
+            utils.hideSpinner();
         }
 
 
@@ -814,9 +937,24 @@ relational.widgets.collectionviewer = (function (window, $) {
          */
 
         function syncHeight() {
-            var h = $(_pageContainerId).height();
-            _collectionElem.height(h);
-            return h;
+            var stretchHeight = $(_pageContainerId).height();
+            var size = $(_collectionContainerId).offset();
+            var docHeight = $(document).height();
+
+            if (size) {
+                stretchHeight = $(window).height();
+                if (size.top < stretchHeight) {
+                    _collectionElem.css("max-height", "100%");
+                    _collectionElem.height(stretchHeight - size.top - 5);
+                } else {
+                    var maxHeight = $(window).height();
+                    stretchHeight = docHeight - size.top;
+                    _collectionElem.css("height", stretchHeight);
+                    _collectionElem.css("max-height", maxHeight);
+                }
+            }
+
+            return stretchHeight;
         }
 
         /**
@@ -892,6 +1030,7 @@ relational.widgets.collectionviewer = (function (window, $) {
 
             setTimeout(function () {
                 self.renderer.renderPage(_pageNav.getCurrent(), getListHeight(), null, updatePagingCounters, pageRenderingCompleted);
+                syncHeight();
             }, actualDelay);
 
         }
@@ -958,15 +1097,15 @@ relational.widgets.collectionviewer = (function (window, $) {
         /* event handler binding */
         $(document).ready(function () {
             console.log();
-            
+
             // widgets/collectionviewer/templates
             // _scriptPath ??
-            var templateSrc = _scriptPath.replace("/js", "") + "templates/collection-view.html";
+            var templateSrc = _scriptPath.replace("/js", "") + "/templates/collection-view.html";
             includeScript(app_defaults.collection_view_template, templateSrc, function () {
                 initView();
 
                 $(window).resize(onResize);
-                $(window).on('scroll', onScroll);
+                // $(window).on('scroll', onScroll);
 
                 _btnNext.click(function () {
                     showNext();
@@ -989,9 +1128,9 @@ relational.widgets.collectionviewer = (function (window, $) {
      */
 
     var module = {
-        createCollectionViewer: function (pageContainerId, collectionContainerId, itemTemplate, dataSource) {
+        createCollectionViewer: function (pageContainerId, collectionContainerId, itemTemplate, dataSource, config) {
             var collectionName = "my_collection_" + createUUID();
-            return new DynamicPager(pageContainerId, collectionContainerId, setOrDefault(itemTemplate, null), setOrDefault(dataSource, null), collectionName);
+            return new DynamicPager(pageContainerId, collectionContainerId, setOrDefault(itemTemplate, null), setOrDefault(dataSource, null), collectionName, merge(default_config, config));
         },
         defaults: app_defaults
     };

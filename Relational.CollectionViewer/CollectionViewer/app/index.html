@@ -19,7 +19,7 @@ and open the template in the editor.
 </head>
 <body>
 
-    <div class="container-fluid full-height" id="main">
+    <div class="container full-height" id="main">
         <div id="main-layout" class="row full-height">
         </div>
         <div id="footer">
@@ -43,8 +43,10 @@ and open the template in the editor.
             <div class="panel-heading">
                 <span data-bind="text: header"></span>
             </div>
-            <div class="panel-body item-text" data-bind="text: text">
+            <div class="panel-body item-text" style="overflow:auto;">
+                <div data-bind="text: text">
 
+                </div>
             </div>
         </div>
     </script>
@@ -53,12 +55,11 @@ and open the template in the editor.
     <script src="js/underscore.js"></script>
     <script src="js/jquery.js"></script>
     <script src="js/bootstrap.js"></script>
-    <!--
-    <script src="js/knockout.js"></script>
-        -->
+    <script src="js/spin.js"></script>
+    <!-- <script src="js/knockout.js"></script> -->
     <script src="js/kendo.all.min.js"></script>
 
-    <script src="models/collectionview.js"></script>
+    <script src="js/collectionviewer.js"></script>
 
     <script type="text/javascript">
 

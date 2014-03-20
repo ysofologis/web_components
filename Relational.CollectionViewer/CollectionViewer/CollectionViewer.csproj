@@ -74,8 +74,9 @@
     <Content Include="app\js\kendo.web.min.js" />
     <Content Include="app\js\knockout.js" />
     <Content Include="app\js\modernizr.js" />
+    <Content Include="app\js\spin.js" />
     <Content Include="app\js\underscore.js" />
-    <Content Include="app\models\collectionview.js" />
+    <Content Include="app\js\collectionviewer.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="app\fonts\glyphicons-halflings-regular.eot" />
