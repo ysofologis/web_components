@@ -12,22 +12,27 @@
         overflow: hidden;
         border-bottom: solid 1px gray;
         padding: 0px;
-        height: 100%;
+        height: calc(100% - 25px);
         margin-bottom: 10px;
     }
 
         .collection-view .list-container > li {
             margin: 5px 0px 5px 0px;
-            padding: 0px 2.5px 0 2.5px;
+            padding: 0px 2.5px 0px 2.5px;
+            border: 1px solid lightblue;
             overflow: hidden;
             height: auto;
         }
 
     .collection-view .popover {
         background: rgba(128, 128, 128, 0.4);
+        min-width: 450px;
     }
     .collection-view .popover-content {
         overflow:auto;
+        max-height: 350px;
+        margin-top: 5px;
+        margin-bottom: 5px;
     }
 
     .collection-view .popover .arrow {
@@ -48,8 +53,6 @@
         border: solid #309dd4 1px; /* if debug */
         border: none;
         border-radius: 5px;
-        padding: 5px 5px 5px 5px;
-        position: relative;
     }
 
         .collection-view .item-container .item-placeholder {
@@ -58,11 +61,6 @@
             overflow: auto;
             overflow: hidden;
         }
-
-            .collection-view .item-container .item-placeholder > div {
-                width: 100%;
-                height: 100%;
-            }
 
 
         .collection-view .item-container.shrunk .item-placeholder {

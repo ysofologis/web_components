@@ -52,7 +52,7 @@ relational.widgets.collectionviewer = (function (window, $) {
         enumerable: false,
         configurable: false,
         writable: false,
-        value: 15
+        value: 10
     });
 
     Object.defineProperty(app_defaults, "x_shrink_factor", {
@@ -384,6 +384,10 @@ relational.widgets.collectionviewer = (function (window, $) {
             return r;
         };
 
+        self.dispose = function () {
+            self.visibleItems.clear();
+        };
+
         /*
          * Contains an item from the input array
          * @param {type} id
@@ -533,7 +537,7 @@ relational.widgets.collectionviewer = (function (window, $) {
                 var containerHtml = String.format("<li id='{0}'><div id='{1}' class='item-container {2}'><div class='item-placeholder'></div>{3}</div></li>", item.listItemId, item.itemId, app_defaults.item_hidden_class, seeMoreHtml);
                 _ul.append(containerHtml);
 
-                var modelView = new kendo.View(_itemTemplate, { model: item.model });
+                var modelView = new kendo.View(_itemTemplate, { model: item.model, wrap: false });
                 modelView.render($("#" + item.itemId + " .item-placeholder"));
 
                 item.setView(modelView, _config);
@@ -578,67 +582,6 @@ relational.widgets.collectionviewer = (function (window, $) {
             };
         }
 
-        function fetchData(dataSource, callback) {
-            var dataView = dataSource.view();
-            var dataLen = dataSource.total();
-
-            if ((!dataView) || (dataView.length < dataLen) || (dataView.length == 0)) {
-                dataSource.fetch(callback);
-            } else {
-                callback();
-            }
-        }
-
-        function getNext(dataSource, ix, callback) {
-
-            var currentIndex = ix;
-            var currentModel = null;
-            var dataLen = dataSource.total();
-
-            if (ix < dataLen) {
-                var dataView = dataSource.view();
-
-                if (ix < dataView.length) {
-                    var item = dataView[ix];
-                    currentModel = item;
-
-                    if (!(currentModel instanceof kendo.observable)) {
-                        currentModel = new kendo.observable(item);
-                    }
-
-                    callback(currentIndex, currentModel);
-
-                } else {
-
-                    var dataPageSize = dataSource.pageSize();
-                    var dataPage = Math.ceil(dataLen / dataPageSize);
-
-                    var data = dataSource.query({
-                        page: dataPage,
-                        pageSize: dataPageSize,
-                        serverPaging: true,
-                        serverSorting: true,
-                    });
-
-                    var dataView = dataSource.view();
-
-                    if (ix < dataView.length) {
-                        var item = dataView[ix];
-                        currentModel = item;
-
-                        if (!(currentModel instanceof kendo.observable)) {
-                            currentModel = new kendo.observable(item);
-                        }
-
-                        callback(currentIndex, currentModel);
-                    }
-                }
-            }
-            else {
-                callback(currentIndex, currentModel);
-            }
-        }
-
         /*
          * Renders items for the current page starting from a given array slice index
          * @param {type} pageId
@@ -651,76 +594,74 @@ relational.widgets.collectionviewer = (function (window, $) {
             console.log(String.format("<tryRenderPage:{0}>", page.pageId));
 
             if (lastPage) {
-                self.visibleItems.clear();
+                if (self.visibleItems.size() > 0) {
+                    self.visibleItems.clear();
+                }
             }
 
-            fetchData(_dataSource, function () {
-                var itemRenderer = new PagedItemRenderer(page, containerHeight);
+            var itemRenderer = new PagedItemRenderer(page, containerHeight);
 
-                var ix = page.startIndex;
-                var shouldContinue = true;
+            var ix = page.startIndex;
+            var shouldContinue = true;
 
-                var dataLen = _dataSource.total();
+            // 1. Async fetching depends on data source content
+            // 2. isolate current index inside callback to avoid invalid index value
+            function renderNextItem(currentIndex, currentItem, currentPage) {
 
-                while (ix < dataLen) {
+                if (!currentItem) {
+                    shouldContinue = false;
+                    if (renderingCompleted) {
+                        renderingCompleted(_dataSource, currentPage);
+                    }
+                    return;
+                }
 
-                    // 1. Async fetching depends on data source content
-                    // 2. isolate current index inside callback to avoid invalid index value
-                    getNext(_dataSource, ix, function (currentIndex, currentModel) {
-                        if (!shouldContinue) {
-                            return;
-                        }
-                        if (!currentModel) {
-                            shouldContinue = false;
+                var currentModel = new kendo.observable(currentItem);
 
-                            if (renderingCompleted) {
-                                renderingCompleted();
-                            }
+                var itemContainer = self.visibleItems.getById(currentIndex);
+                var alreadyLoaded = false;
 
-                            return;
-                        }
+                if (!itemContainer) {
+                    itemContainer = new ItemContainer(currentIndex, currentModel, collectionName);
+                } else {
+                    alreadyLoaded = true;
+                }
 
-                        var itemContainer = self.visibleItems.getById(currentIndex);
-                        var alreadyLoaded = false;
+                if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
+                    itemContainer.show();
+                    self.visibleRange.to.set(currentIndex + 1);
+                    currentPage.endIndex = currentIndex;
+                    updatePagingCounters();
+                    self.visibleItems.set(itemContainer);
 
-                        if (!itemContainer) {
-                            itemContainer = new ItemContainer(currentIndex, currentModel, collectionName);
-                        } else {
-                            alreadyLoaded = true;
-                        }
+                    var nextIndex = currentIndex + 1;
+                    var nextPage = currentPage;
 
-                        if (itemRenderer.tryRenderItem(itemContainer, alreadyLoaded)) {
-                            itemContainer.show();
-                            self.visibleRange.to.set(currentIndex + 1);
-                            page.endIndex = currentIndex;
-                            updatePagingCounters();
-                            self.visibleItems.set(itemContainer);
-                        } else {
-                            self.visibleItems.remove(function (i) {
-                                return i === itemContainer.itemId;
-                            });
-                            itemContainer.dispose();
-                            shouldContinue = false;
-
-                            if (renderingCompleted) {
-                                renderingCompleted();
-                            }
-
-                        }
+                    _dataSource.getItem(nextIndex, function (nextItem) {
+                        renderNextItem(nextIndex, nextItem, nextPage);
                     });
 
-                    if (!shouldContinue) {
-                        break;
-                    }
+                } else {
+                    self.visibleItems.remove(function (i) {
+                        return i === itemContainer.itemId;
+                    });
+                    itemContainer.dispose();
+                    shouldContinue = false;
 
-                    ix++;
-                }
-
-                if (ix == dataLen) {
                     if (renderingCompleted) {
-                        renderingCompleted();
+                        renderingCompleted(_dataSource, currentPage);
                     }
+
+                    return;
                 }
+            }
+
+            // getNext(_dataSource, ix, dataPage, renderNextItem);
+
+            var nextIndex = ix;
+            var nextPage = page;
+            _dataSource.getItem(nextIndex, function (item) {
+                renderNextItem(nextIndex, item, nextPage);
             });
 
         };
@@ -741,6 +682,112 @@ relational.widgets.collectionviewer = (function (window, $) {
 
     }
 
+    /**
+    *
+    */
+    function DataSourceCache(realDataSource) {
+        var self = this;
+
+        var _dataSource = realDataSource;
+        var _synced = false;
+        var _total = 0;
+        var _cachedItems = {};
+
+        self.total = function () {
+            if (_synced) {
+                return _dataSource.total();
+            } else {
+                if (_dataSource) {
+                    _dataSource.fetch(function () {
+                        _synced = true;
+                    });
+                    return _dataSource.total();
+                } else {
+                    return 0;
+                }
+            }
+        };
+
+        self.fetch = function (callback) {
+            if (_synced) {
+                callback();
+            } else {
+                if (_dataSource) {
+                    _dataSource.fetch(function () {
+                        callback();
+                    });
+                } else {
+                    callback();
+                }
+            }
+        }
+
+        function cacheCurrentPage(pageIndex) {
+            var dataview = _dataSource.view();
+            var pageStart = _dataSource.pageSize() * (pageIndex - 1);
+
+            if (isNaN(pageStart)) {
+                pageStart = 0;
+            }
+
+            for (var ix = 0; ix < dataview.length; ix++) {
+                if (!_cachedItems[pageStart + ix]) {
+                    _cachedItems[pageStart + ix] = dataview[ix];
+                }
+            }
+        }
+
+        function fetchItem(ix, callback) {
+            if (ix < _dataSource.total()) {
+                if (_cachedItems[ix]) {
+                    callback(_cachedItems[ix]);
+                } else {
+                    var page = Math.ceil(ix / _dataSource.pageSize()) + 1;
+                    var pageSize = _dataSource.pageSize();
+
+                    if (_dataSource.page() != page || (!_cachedItems[ix])) {
+                        _dataSource.query({
+                            page: page,
+                            pageSize: pageSize,
+                            serverPaging: true,
+                            serverSorting: true
+                        });
+                        _dataSource.page(page);
+
+                        _dataSource.fetch(function () {
+                            _dataSource.page(page);
+                            cacheCurrentPage(page);
+                            callback(_cachedItems[ix]);
+                        });
+
+                    } else {
+                        callback(_cachedItems[ix]);
+                    }
+                }
+            } else {
+                callback(null);
+            }
+        }
+
+        self.getItem = function (ix, callback) {
+            if (_synced) {
+                fetchItem(ix, callback);
+            } else {
+                if (_dataSource) {
+
+                    _dataSource.fetch(function () {
+                        _synced = true;
+                        var dataLen = _dataSource.total();
+                        var page = Math.ceil(ix / dataLen) + 1;
+                        cacheCurrentPage(page);
+                        fetchItem(ix, callback);
+                    });
+                } else {
+                    callback(null);
+                }
+            }
+        };
+    }
     /*
      * 
      * @param {type} startIndex
@@ -849,7 +896,8 @@ relational.widgets.collectionviewer = (function (window, $) {
         var _pageContainerId = pageContainerId;
         var _collectionContainerId = collectionContainerId;
         var _pageNav = new PageNavigation();
-        var _dataSource = dataSource;
+        var _dataSource = new DataSourceCache(dataSource);
+        var _renderer = null;
         var _itemTemplate = itemTemplate;
         var _config = config;
 
@@ -865,8 +913,13 @@ relational.widgets.collectionviewer = (function (window, $) {
 
 
         function initRenderer() {
-            self.renderer = new ItemsRenderer(_collectionContainerId, _collectionName, _config);
-            self.renderer.setDataSource(dataSource, itemTemplate);
+            if (_renderer) {
+                _renderer.dispose();
+            }
+
+            _renderer = new ItemsRenderer(_collectionContainerId, _collectionName, _config);
+            _dataSource = new DataSourceCache(dataSource);
+            _renderer.setDataSource(_dataSource, itemTemplate);
 
             self.itemsCount = new ComputedBoundField(_collectionContainerId + " .paging .items-count", function () {
                 if (_dataSource) {
@@ -876,11 +929,11 @@ relational.widgets.collectionviewer = (function (window, $) {
             }).update();
 
             self.fromVisible = new ComputedBoundField(_collectionContainerId + " .paging .visible-from", function () {
-                return self.renderer.visibleRange.from.get() + 1;
+                return _renderer.visibleRange.from.get() + 1;
             }).update();
 
             self.toVisible = new ComputedBoundField(_collectionContainerId + " .paging .visible-to", function () {
-                return self.renderer.visibleRange.to.get() + 1;
+                return _renderer.visibleRange.to.get() + 1;
             }).update();
         }
 
@@ -889,7 +942,7 @@ relational.widgets.collectionviewer = (function (window, $) {
                 _collectionView.destroy();
             }
 
-            _collectionView = new kendo.View(app_defaults.collection_view_template, { model: null });
+            _collectionView = new kendo.View(app_defaults.collection_view_template, { model: null, wrap: false });
             _collectionView.render($(_collectionContainerId));
 
             _collectionElem = $(_collectionContainerId);
@@ -897,7 +950,7 @@ relational.widgets.collectionviewer = (function (window, $) {
             _btnNext = $(_collectionContainerId + " .collection-view .paging .show-next");
             _btnPrev = $(_collectionContainerId + " .collection-view .paging .show-prev");
 
-            self.renderer.wrapElements();
+            _renderer.wrapElements();
             _viewLoaded = true;
 
         };
@@ -910,19 +963,17 @@ relational.widgets.collectionviewer = (function (window, $) {
             self.toVisible.update();
         }
 
-        function pageRenderingCompleted() {
+        function pageRenderingCompleted(dataSource, currentPage) {
             _btnPrev.attr("disabled", "disabled");
             _btnNext.attr("disabled", "disabled");
 
-            var pg = _pageNav.getCurrent();
+            var totalItems = dataSource.total();
 
-            var totalItems = _dataSource.total();
-
-            if (pg.endIndex < (totalItems - 1)) {
+            if (currentPage.endIndex < (totalItems - 1)) {
                 _btnNext.removeAttr("disabled");
             }
 
-            if (pg.pageId > 1) {
+            if (currentPage.pageId > 1) {
                 _btnPrev.removeAttr("disabled");
             }
 
@@ -983,7 +1034,7 @@ relational.widgets.collectionviewer = (function (window, $) {
 
             if (duration >= actualDelay) {
                 setTimeout(function () {
-                    self.renderer.resizePage(_pageNav.getCurrent(), getListHeight(), updatePagingCounters, pageRenderingCompleted);
+                    _renderer.resizePage(_pageNav.getCurrent(), getListHeight(), updatePagingCounters, pageRenderingCompleted);
                 }, actualDelay);
 
                 _lastResize = nowTime;
@@ -1029,7 +1080,7 @@ relational.widgets.collectionviewer = (function (window, $) {
             _btnNext.attr("disabled", "disabled");
 
             setTimeout(function () {
-                self.renderer.renderPage(_pageNav.getCurrent(), getListHeight(), null, updatePagingCounters, pageRenderingCompleted);
+                _renderer.renderPage(_pageNav.getCurrent(), getListHeight(), null, updatePagingCounters, pageRenderingCompleted);
                 syncHeight();
             }, actualDelay);
 
@@ -1045,12 +1096,12 @@ relational.widgets.collectionviewer = (function (window, $) {
 
         self.load = function (collectionContainerId, dataSource, itemTemplate) {
             _collectionContainerId = collectionContainerId;
-            _dataSource = dataSource;
             _itemTemplate = itemTemplate;
             initView();
             initRenderer();
-            self.renderer.wrapElements();
-            self.renderer.setDataSource(_dataSource, _itemTemplate);
+            _dataSource = new DataSourceCache(dataSource);
+            _renderer.wrapElements();
+            _renderer.setDataSource(_dataSource, _itemTemplate);
 
             _btnNext.click(function () {
                 showNext();
@@ -1069,13 +1120,16 @@ relational.widgets.collectionviewer = (function (window, $) {
          * @returns {undefined}
          */
         function _renderPage(currentPage, lastPage) {
-            self.renderer.renderPage(currentPage, getListHeight(), lastPage, updatePagingCounters, pageRenderingCompleted);
+            _renderer.renderPage(currentPage, getListHeight(), lastPage, updatePagingCounters, pageRenderingCompleted);
         }
         /*
          * navigate to next page
          */
         function showNext() {
             console.log("<showNext>");
+
+            _btnPrev.attr("disabled", "disabled");
+            _btnNext.attr("disabled", "disabled");
 
             var lastPage = _pageNav.getCurrent();
             _pageNav.moveNext(lastPage.endIndex + 1);
@@ -1086,6 +1140,9 @@ relational.widgets.collectionviewer = (function (window, $) {
          */
         function showPrev() {
             console.log("<showPrev>");
+
+            _btnPrev.attr("disabled", "disabled");
+            _btnNext.attr("disabled", "disabled");
 
             var lastPage = _pageNav.getCurrent();
             _pageNav.movePrev();
@@ -1100,7 +1157,7 @@ relational.widgets.collectionviewer = (function (window, $) {
 
             // widgets/collectionviewer/templates
             // _scriptPath ??
-            var templateSrc = _scriptPath.replace("/js", "") + "/templates/collection-view.html";
+            var templateSrc = "templates/collection-view.html";
             includeScript(app_defaults.collection_view_template, templateSrc, function () {
                 initView();
 

@@ -63,7 +63,9 @@
     <Content Include="app\css\app.css" />
     <Content Include="app\css\collectionviewer.css" />
     <Content Include="app\css\bootstrap.css" />
+    <Content Include="app\css\dynamic_columns.css" />
     <Content Include="app\css\groundwork.css" />
+    <Content Include="app\dynamic_columns.html" />
     <Content Include="app\fonts\glyphicons-halflings-regular.svg" />
     <Content Include="app\index.html" />
     <Content Include="app\js\bootstrap.js" />
@@ -84,6 +86,7 @@
     <Content Include="app\fonts\glyphicons-halflings-regular.woff" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="app\js\page_layout.js" />
     <Content Include="app\templates\collection-view.html" />
     <Content Include="web.config" />
     <None Include="web.Debug.config">

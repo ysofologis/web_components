@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Add/Remove bootstrap columns dynamically using jquery</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="js/modernizr.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="css/dynamic_columns.css">
+
+</head>
+<body>
+    <div id="page" class="container">
+    </div>
+
+    <script type="text/x-kendo-template" id="main-layout-template">
+        <div id="top-bar">
+            <div class="row">
+                <button class="col-lg-3 col-md-3 col-sm-3" data-bind="click: toggleLeft">Toggle Left</button>
+                <div class="col-lg-3 col-md-3 col-sm-3"></div>
+                <div class="col-lg-3 col-md-3 col-sm-3"></div>
+                <button class="col-lg-3 col-md-3 col-sm-3" data-bind="click: toggleRight">Toggle Right</button>
+            </div>
+        </div>
+        <div id="main">
+            <div id="left-side" data-bind="column: leftSide.options"></div>
+            <div id="content-area" data-bind="column: contentArea.options"></div>
+            <div id="right-side" data-bind="column: rightSide.options"></div>
+        </div>
+    </script>
+
+    <!-- == dependencies == -->
+    <script src="js/underscore.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/spin.js"></script>
+    <!-- <script src="js/knockout.js"></script> -->
+    <script src="js/kendo.all.min.js"></script>
+
+    <script src="js/page_layout.js"></script>
+
+    <script>
+        kendo.data.binders.column = kendo.data.Binder.extend({
+            refresh: function () {
+                var options = this.bindings["column"].get();
+
+                if (options.previousClass) {
+                    $(this.element).kendoRemoveClass(options.previousClass).kendoAddClass(options.cssClass, { duration: 500 });
+                } else {
+                    $(this.element).kendoAddClass(options.cssClass, { duration: 500 });
+                }
+            }
+        });
+    </script>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            var layoutVM = new LayoutVM();
+            var mainLayout = new kendo.View("main-layout-template", { model: layoutVM, wrap: false });
+            mainLayout.render($("#page"));
+        });
+
+    </script>
+
+</body>
+</html>

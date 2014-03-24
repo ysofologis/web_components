@@ -108,7 +108,7 @@ and open the template in the editor.
             // immutable !!
             appDefaults.zero_opacity = 100;
 
-            var mainLayout = new kendo.Layout("main-layout-template", { model: null });
+            var mainLayout = new kendo.Layout("main-layout-template", { model: null, wrap: false });
             $("#main-layout").html(mainLayout.render());
         });
 
