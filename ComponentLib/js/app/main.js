@@ -13,6 +13,7 @@ require.config({
         text: 'require/text',
         underscore: 'underscore/underscore',
         jquery: 'jquery/jquery',
+        'jquery.slimscroll': 'jquery/jquery.slimscroll',
         kendo: 'kendo/kendo.all.min',
         knockout: 'knockout/knockout',
         bootstrap : 'bootstrap/bootstrap',
@@ -29,7 +30,8 @@ require.config({
         bootstrap : ["jquery"],
         spin : {
             deps: ["jquery"],
-        }
+        },
+        'jquery.slimscroll' : ['jquery']
     }
 });
 

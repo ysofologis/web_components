@@ -27,12 +27,13 @@
     .collection-view .popover {
         background: rgba(128, 128, 128, 0.4);
         min-width: 450px;
+        padding-top: 10px;
+        padding-bottom: 10px;
     }
     .collection-view .popover-content {
-        overflow:auto;
+        overflow:hidden;
         max-height: 350px;
-        margin-top: 5px;
-        margin-bottom: 5px;
+        padding: 0px 20px 0px 12px;
     }
 
     .collection-view .popover .arrow {
