@@ -8,7 +8,7 @@
 
 define(["underscore", "jquery", "kendo", "spin",
     "text!templates/collection-view.html",
-    "bootstrap", "jquery.slimscroll"],
+    "bootstrap", "jquery.slimscroll", "iscroll"],
         function(_, $, kendo, Spinner, viewTemplate) {
 
             var app_defaults = {};
@@ -499,13 +499,25 @@ define(["underscore", "jquery", "kendo", "spin",
 
 
                             getElem().on('shown.bs.popover', function() {
-                                var contentElem = $("#" + self.listItemId + " .popover-content");
-                                var elemHeight = contentElem.height();
 
-                                contentElem.slimScroll({
-                                    height: elemHeight,
-                                    size: '15px'
+                                var scrollElemId = "#" + self.listItemId + " .popover-content";
+                                var scrollElem = $(scrollElemId);
+                                var elemHeight = scrollElem.height();
+
+                                var myScroll = new iScroll(scrollElem.get(0), {
+                                    scrollbars: true,
+                                    mouseWheel: true,
+                                    interactiveScrollbars: true,
+                                    shrinkScrollbars: 'scale',
+                                    fadeScrollbars: true
                                 });
+
+                                /*
+                                 scrollElem.slimScroll({
+                                 height: elemHeight,
+                                 size: '15px'
+                                 });
+                                 */
                             });
 
                         });

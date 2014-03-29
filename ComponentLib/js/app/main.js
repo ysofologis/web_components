@@ -18,9 +18,10 @@ require.config({
         knockout: 'knockout/knockout',
         bootstrap : 'bootstrap/bootstrap',
         spin : 'spin/spin',
+        iscroll : 'iscroll/iscroll',
         collectionviewer : '../app/collectionviewer/collectionviewer',
         templates : '../../templates',
-        app: '../app/app',
+        app: '../app/app'
         
     },
     shim: {
