@@ -4,8 +4,8 @@
  * and open the template in the editor.
  */
 
-define(["jquery", "kendo", "collectionviewer", "text!templates/main-layout.html"],
-        function($, kendo, collectionviewer, layoutHtml) {
+define(["jquery", "kendo", "collectionviewer", "text!templates/main-layout.html", "text!templates/item-template.html"],
+        function($, kendo, collectionviewer, layoutTemplate, itemTemplate) {
 
             var app = {};
 
@@ -22,10 +22,12 @@ define(["jquery", "kendo", "collectionviewer", "text!templates/main-layout.html"
                     return item;
                 }
 
-                window.loadCollection = function() {
-                    _collectionViewer.load("#collection-view-container", _dataSource, "item-template");
+                function loadDataSource() {
+                    _collectionViewer.load("#collection-view-container", _dataSource, itemTemplate);
                     _collectionViewer.show();
                 }
+                
+                window.loadCollection = loadDataSource;
 
                 $(document).ready(function() {
 
@@ -53,7 +55,13 @@ define(["jquery", "kendo", "collectionviewer", "text!templates/main-layout.html"
                     var appDefaults = collectionviewer.defaults;
                     // immutable !!
                     appDefaults.zero_opacity = 100;
-                    var mainLayout = new kendo.Layout(layoutHtml, {model: null, wrap: false});
+                    var mainLayout = new kendo.Layout(layoutTemplate, {
+                        model: null, 
+                        wrap: false,
+                        show: function() {
+                            loadDataSource();
+                        }
+                    });
                     $("#main-layout").html(mainLayout.render());
                 });
             };

@@ -6,7 +6,7 @@
  * DEPENDENCIES: jquery, kendo.web, spiner.js
  */
 
-define(["underscore", "jquery", "kendo", "spin", "text!templates/collection-view.html"], 
+define(["underscore", "jquery", "kendo", "spin", "text!templates/collection-view.html","bootstrap"], 
 function(_, $, kendo, Spinner, viewTemplate) {
 
     var app_defaults = {};
