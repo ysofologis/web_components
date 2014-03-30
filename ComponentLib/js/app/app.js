@@ -32,7 +32,7 @@ define(["jquery", "kendo", "collectionviewer", "text!templates/main-layout.html"
                 var collectionItems = [
                     createItem('01. asfsdfadf', 'sdfasdfasdf sdfasdfasdf', 2),
                     createItem('02. asfsdfadf', 'sdfasdfasdf sdfasdfasdf\n 456547547thjyuiyuifghg δφγυηρυτρτ ', 1),
-                    createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 15),
+                    createItem('03. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 55),
                     createItem('04. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
                     createItem('05. asfsdfadf', 'sdfasdfasdf sdfasdfasdf 456456456 ghdfhgdfg sasdfasf vbmnXCdfg 678k', 3),
                     createItem('06. asfsdfadf', 'sdfasdfasdf sdfasdfasdf ', 1),
