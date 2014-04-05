@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Testing WinJS Features</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+        <link rel="stylesheet" type="text/css" href="css/normalize.css">
+        <script src="js/utils/modernizr/modernizr.js"></script>
+        
+        <link rel="stylesheet" type="text/css" href="css/foundation/foundation.css">
+
+        <link rel="stylesheet" type="text/css" href="css/winjs/ui-light.css">
+        <link rel="stylesheet" type="text/css" href="css/app.css">
+        
+
+    </head>
+    <body>
+        <div id="app-page">
+            <div class="row">
+
+                <div class="large-12 columns">
+                    <div class="panel">
+                        <!-- Simple template for the ListView instantiation  -->
+                        <div id="smallListIconTextTemplate" data-win-control="WinJS.Binding.Template" style="display: none">
+                            <div class="smallListIconTextItem">
+                                <img src="#" class="smallListIconTextItem-Image" data-win-bind="src: picture" />
+                                <div class="smallListIconTextItem-Detail">
+                                    <h4 data-win-bind="textContent: index"></h4>
+                                    <h4 data-win-bind="textContent: title"></h4>
+                                    <h6 data-win-bind="textContent: text"></h6>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- The declarative markup necesary for ListView instantiation -->
+                        <!-- Call WinJS.UI.processAll() in your initialization code -->
+                        <div id="listView"
+                             class="win-selectionstylefilled"
+                             data-win-control="WinJS.UI.ListView"
+                             data-win-options="{
+                             itemDataSource: Sample.ListView.data.dataSource,
+                             itemTemplate: smallListIconTextTemplate,
+                             selectionMode: 'none',
+                             tapBehavior: 'none',
+                             swipeBehavior: 'none',
+                             layout: { type: WinJS.UI.ListLayout }
+                             }">
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+
+        <script src="js/lib/jquery/jquery.js"></script>
+        <script src="js/lib/foundation/foundation.min.js"></script>
+        <script>
+            $(document).foundation();
+        </script>
+
+        <script src="js/lib/winjs/base.js"></script>
+        <script src="js/lib/winjs/ui.js"></script>
+        <script src="js/app/examples/listview/main.js"></script>
+
+    </body>
+
+</html>
