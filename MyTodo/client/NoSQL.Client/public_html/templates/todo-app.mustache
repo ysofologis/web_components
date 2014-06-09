@@ -1,0 +1,21 @@
+<div style="height: 100%;">
+    <h2>Todays to-dos</h2>
+    {{#selectedTodo}}
+    <input type="text"
+            can-value="title" 
+            can-change="save"/>
+    {{/selectedTodo}}
+    <ul class="list-unstyled">
+        {{#each todos}}
+        <li>
+            <input type="checkbox" 
+                   can-value="is_completed"/>
+            <span class="{{#if is_completed}}done{{/if}}"
+              can-click="select">
+                {{id}} --> {{title}}
+            </span>
+            <button can-click="destroy">Delete</button>
+        </li>
+        {{/each}}
+    </ul>
+</div>   

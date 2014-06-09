@@ -4,11 +4,8 @@
  * and open the template in the editor.
  */
 
-console.log();
 
 +function($, _, amplify, app) {
-    console.log();
-
     amplify.request.define("check_db", "ajax", {
         url: "{baseUrl}/_all_dbs",
         type: "GET",
@@ -52,19 +49,23 @@ console.log();
     };
 
     var utils = {
-        getTemplate : function(name) {
+        getTemplate: function(name) {
             var content = null;
-          $.ajax({
-              url : "templates/" + name + ".tpl",
-              async : false,
-              success: function(data) {
-                  content = data;
-              },
-              error : function(e) {
-                  console.log(e);
-              }
-          });  
-          return content;
+            var templateUri = sprintf("templates/%s.mustache", name);
+            $.ajax({
+                url : templateUri, 
+                async : false,
+                success: function(data) {
+                    content = $(data.documentElement).html();
+                },
+                error: function(xhr) {
+                    console.log(xhr);
+                    if(xhr.status === 200) {
+                        content = xhr.responseText;
+                    }
+                }
+            });
+            return content;
         },
         getDocument: function(database, name) {
         },
