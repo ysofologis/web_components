@@ -19,6 +19,8 @@ html,body {
     margin: 0;
     padding:  0;
     background-color: rgba(128,128,128,0.05);
+    font-family: 'Source Sans Pro';
+    font-size: 15px;
 }
 
 #wrapper > .container {

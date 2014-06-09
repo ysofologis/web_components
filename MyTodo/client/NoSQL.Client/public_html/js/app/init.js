@@ -33,7 +33,7 @@ console.log();
                     amplify.request("check_db", {baseUrl: app.config.baseUrl}, function(data) {
                         for (var i in data) {
                             var db_name = data[i];
-                            if (db_name == app.config.db_name) {
+                            if (db_name === app.config.db_name) {
                                 serviceInitialized = true;
                                 if (callback) {
                                     callback();
@@ -52,6 +52,20 @@ console.log();
     };
 
     var utils = {
+        getTemplate : function(name) {
+            var content = null;
+          $.ajax({
+              url : "templates/" + name + ".tpl",
+              async : false,
+              success: function(data) {
+                  content = data;
+              },
+              error : function(e) {
+                  console.log(e);
+              }
+          });  
+          return content;
+        },
         getDocument: function(database, name) {
         },
         putResource: function(database, name) {
