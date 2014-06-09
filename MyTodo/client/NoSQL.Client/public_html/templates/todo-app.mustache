@@ -12,7 +12,8 @@
                    can-value="is_completed"/>
             <span class="{{#if is_completed}}done{{/if}}"
               can-click="select">
-                {{id}} --> {{title}}
+               <span>{{id}}</span> 
+               <span style="margin-left: 10px;">{{title}}</span>
             </span>
             <button can-click="destroy">Delete</button>
         </li>

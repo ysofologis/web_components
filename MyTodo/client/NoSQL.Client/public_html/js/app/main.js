@@ -27,9 +27,35 @@
                     return def;
                 };
             },
-            findOne: sprintf('GET %(baseUrl)s/%(db_name)s/{id}', app.config),
-            update: sprintf('PUT %(baseUrl)s/%(db_name)s/{id}', app.config),
-            destroy: sprintf('DELETE %(baseUrl)s/%(db_name)s/{id}', app.config)
+            findOne: sprintf('GET %(baseUrl)s/%(db_name)s/{_id}', app.config),
+            update: sprintf('PUT %(baseUrl)s/%(db_name)s/{_id}', app.config),
+            destroy1: sprintf('DELETE %(baseUrl)s/%(db_name)s/{_id}?rev={_rev}', app.config),
+            destroy2: function(id) {
+                console.log(id);
+                var def = Todo.findOne({_id: id}, function(todo) {
+                    var url = sprintf('%(baseUrl)s/%(db_name)s', app.config);
+                    url += "/" + todo._id + "?rev=" + todo._rev;
+                    var reqUrl = encodeURI(url);
+                    $.ajax({
+                        url: reqUrl,
+                        type: 'DELETE',
+                        success: function(r) {
+                            console.log(r);
+                        },
+                        error: function(xhr) {
+                            console.log(xhr);
+                        }
+                    });
+                });
+                return def;
+            },
+            destroy: function(id) {
+                var def = Todo.findOne({_id: id}, function(todo) {
+                    todo._deleted = true;
+                    todo.save();
+                });
+                return def;
+            }
         }, {});
 
         return Todo;
@@ -43,7 +69,7 @@
             var todoTemplate = app.utils.getTemplate("todo-app");
             can.Component.extend({
                 tag: 'todos-app',
-                template : todoTemplate,
+                template: todoTemplate,
                 scope: {
                     selectedTodo: null,
                     todos: new Todo.List({}),
@@ -56,9 +82,9 @@
                     }
                 }
             });
-                 
+
             var viewTemplate = can.view.mustache("<todos-app></todos-app>");
-            $("#todo-view").html( viewTemplate() );
+            $("#todo-view").html(viewTemplate());
         };
 
         app.shell.init(function() {
