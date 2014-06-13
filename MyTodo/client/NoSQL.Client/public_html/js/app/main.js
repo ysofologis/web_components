@@ -28,7 +28,10 @@
                 };
             },
             findOne: sprintf('GET %(baseUrl)s/%(db_name)s/{_id}', app.config),
-            update: sprintf('PUT %(baseUrl)s/%(db_name)s/{_id}', app.config),
+            update: sprintf('PUT %(baseUrl)s/%(db_name)s/{_id}?rev={_rev}', app.config),
+            update2: function(id, attrs) {
+                return $.pu("/recipes/" + id + ".json", attrs, null, "json");
+            },
             destroy: sprintf('DELETE %(baseUrl)s/%(db_name)s/{_id}?rev={_rev}', app.config),
             destroy2: function(id) {
                 console.log(id);
@@ -61,15 +64,18 @@
             is_completed: function() {
                 var r = this.attr("status") === "completed";
                 return r;
+            },
+            mark_deleted: function(item) {
+                Todo.findOne({_id: item.id}, function(todo) {
+                    todo.attr("status", "deleted");
+                    todo.save();
+                });
             }
         });
-
         return Todo;
     };
-
     $(document).ready(function() {
         console.log();
-
         var initModels = function() {
             var Todo = createCouchTodo();
             var todoTemplate = app.utils.getTemplate("todo-app");
@@ -88,14 +94,11 @@
                     }
                 }
             });
-
             var viewTemplate = can.view.mustache("<todos-app></todos-app>");
             $("#todo-view").html(viewTemplate());
         };
-
         app.shell.init(function() {
             setTimeout(initModels, 0);
         });
     });
-
 })(jQuery, can, window.app);
