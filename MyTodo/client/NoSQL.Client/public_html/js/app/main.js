@@ -29,7 +29,7 @@
             },
             findOne: sprintf('GET %(baseUrl)s/%(db_name)s/{_id}', app.config),
             update: sprintf('PUT %(baseUrl)s/%(db_name)s/{_id}', app.config),
-            destroy1: sprintf('DELETE %(baseUrl)s/%(db_name)s/{_id}?rev={_rev}', app.config),
+            destroy: sprintf('DELETE %(baseUrl)s/%(db_name)s/{_id}?rev={_rev}', app.config),
             destroy2: function(id) {
                 console.log(id);
                 var def = Todo.findOne({_id: id}, function(todo) {
@@ -49,14 +49,20 @@
                 });
                 return def;
             },
-            destroy: function(id) {
+            destroy3: function(id) {
                 var def = Todo.findOne({_id: id}, function(todo) {
                     todo._deleted = true;
                     todo.save();
                 });
                 return def;
             }
-        }, {});
+        },
+        {
+            is_completed: function() {
+                var r = this.attr("status") === "completed";
+                return r;
+            }
+        });
 
         return Todo;
     };
