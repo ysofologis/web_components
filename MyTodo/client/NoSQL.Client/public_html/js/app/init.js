@@ -9,7 +9,8 @@
     amplify.request.define("check_db", "ajax", {
         url: "{baseUrl}/_all_dbs",
         type: "GET",
-        dataType: "json"
+        dataType: "json",
+        crossDomain: true
     });
 
     amplify.request.define("get_bucket_doc", "ajax", {
@@ -21,17 +22,15 @@
         type: "PUT"
     });
 
-    var serviceInitialized = false;
     var shell = {
         init: function(callback) {
             $.getJSON("conf/app.json", function(confData) {
                 app.config = confData;
-                if (!serviceInitialized) {
+                if (!app.config.initDatabase) {
                     amplify.request("check_db", {baseUrl: app.config.baseUrl}, function(data) {
                         for (var i in data) {
                             var db_name = data[i];
                             if (db_name === app.config.db_name) {
-                                serviceInitialized = true;
                                 if (callback) {
                                     callback();
                                 }
@@ -40,7 +39,7 @@
                         }
                     });
                 } else {
-                    if (callack) {
+                    if (callback) {
                         callback();
                     }
                 }

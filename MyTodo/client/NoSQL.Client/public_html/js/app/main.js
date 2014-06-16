@@ -74,6 +74,11 @@
         });
         return Todo;
     };
+    
+    var createEveTodo = function() {
+        
+    };
+    
     $(document).ready(function() {
         console.log();
         var initModels = function() {

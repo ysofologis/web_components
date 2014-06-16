@@ -1,8 +1,9 @@
 {
     "name": "freesrc",
     "app" : "My Todo List",
-    "db_name" : "todos",
-    "default_view" : "tasks",
+    "db_name" : "tasks",
+    "initDatabase" : false,
+    "default_view" : "",
     "api_version" : "v1",
-    "baseUrl" : "http://nosql-srv/couchdb"
+    "baseUrl" : "http://localhost:500"
 }
