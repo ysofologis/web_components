@@ -1,0 +1,11 @@
+{
+    "elements": {},
+    "attributes": {
+        "can-change": {
+            "context": "input"
+        },
+        "can-value": {
+            "context": "input"
+        }
+    }
+}

@@ -1,0 +1,68 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Jun 7, 2014, 11:39:22 AM
+    Author     : freesrc
+*/
+@import url(http://fonts.googleapis.com/css?family=Roboto);
+
+html,body {
+    height: 100%;
+    margin: 0;
+    padding:  0;
+}
+
+#wrapper {
+    height: 100%;
+    margin: 0;
+    padding:  0;
+    background-color: rgba(128,128,128,0.05);
+    font-family: 'Roboto';
+    font-size: 15px;
+}
+
+#wrapper > .container {
+    height: 100%;
+    position: relative;
+}
+
+#topbar {
+    height: 50px;
+    background-color: rgba(0,200,0, 0.1);
+    border: lightgray solid 1px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    padding: 5px;
+}
+
+#main {
+    background: rgba(0,0,200,0.02);
+    height: calc(100% - 75px);
+    border: lightgray solid 1px;
+    padding: 5px;
+}
+
+#options {
+    background-color: rgba(100,0,0,0.05);
+}
+
+#options > ul {
+    padding-top: 10px;
+}
+
+#view {
+    background-color: rgba(100,100,100,0.1);
+}
+
+#todo-view {
+    height: calc(100% - 25px);
+}
+
+@media(min-width:768px){
+    #options, #view {
+        height: 100%;
+    }
+}
