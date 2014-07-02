@@ -3,16 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-define(['jquery','underscore', 'bootstrap'], function($) {
+define(['jquery', 'underscore', 
+            'bootstrap', 
+            'app/utils', 
+            'text!views/shell.html',
+            'text!views/topbar.html'], function($, _u1, _u2, 
+                        utils, shellView, menuView) {
     console.log();
-    $(document).ready(function() {
-       console.log(); 
-    });
-    
     var app = {
-      start: function() {
-          return 0;
-      }
+        start: function() {
+            utils.watchSize();
+            return 0;
+        },
+        utils: utils,
     };
+    $("#workspace").html(shellView);
+    $("#topbar").html(menuView);
     return app;
 });

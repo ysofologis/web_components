@@ -18,8 +18,10 @@ require.config({
         // the HTML page.
         jquery: '../../bower_components/jquery/dist/jquery',
         underscore: '../../bower_components/underscore/underscore',
+        text: '../../bower_components/requirejs-text/text',
         bootstrap: '../../bower_components/bootstrap/dist/js/bootstrap',
-        app: 'js'
+        app: 'js',
+        views: 'views',
     },
     shim: {
         'bootstrap': {
