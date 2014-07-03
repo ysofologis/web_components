@@ -11,7 +11,8 @@ define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
             var SessionModel = app.models.AppModel.extend({
                 session: {
                     sessionId: "",
-                    userName: "sysadmin",
+                    // userName: "sysadmin",
+                    userName: "alpha_212_bro_user1",
                     password: "PASSW0RD",
                     userId: "",
                     userLang: "",
