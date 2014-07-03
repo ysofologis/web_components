@@ -8,59 +8,60 @@
 define(['jquery', 'can', 'app/init', 'app/utils'],
         function($, can, app) {
             var services = app.config.services;
-
-            app.utils.namespace("models", app).Session = function() {
-                var that = this;
-                var _data = new can.Map({sessionId: "", userName: "sdsdfsdf", userId: "", userLang: "", lastRequest: ""});
-                that.login = function(account, password, onsuccess, onerror) {
+            var SessionModel = can.Map.extend({
+                session: {sessionId: "", userName: "sysadmin", password: "PASSW0RD", userId: "", userLang: "", lastRequest: ""},
+                login: function(onsuccess, onerror) {
                     var headers = {};
-                    var creds = '{0}:{1}'.format(account, password);
+                    var session = this.attr("session");
+                    var creds = '{0}:{1}'.format(session.attr("userName"), session.attr("password"));
                     headers['Authorization'] = 'basic {0}'.format(btoa(creds));
-                    $.ajax({
-                        url: "{0}/Sessions".format(services.main.baseUrl),
-                        async: true,
-                        contentType: 'application/json',
-                        headers: headers,
-                        method: 'POST',
-                        crossDomain: true,
-                        success: function(resp) {
-                            _data.attr("sessionId", resp.SessionId);
-                            _data.attr("userName", resp.UserId);
-                            _data.attr("userId", resp.Username);
-                            _data.attr("userLang", resp.UserLanguage);
-                            _data.attr("lastRequest", resp.LastRequest);
-                            if (onsuccess) {
-                                onsuccess();
+                    try {
+                        $.ajax({
+                            url: "{0}/Sessions".format(services.main.baseUrl),
+                            async: true,
+                            contentType: 'application/json',
+                            headers: headers,
+                            method: 'POST',
+                            crossDomain: true,
+                            success: function(resp) {
+                                this.session.attr("sessionId", resp.SessionId);
+                                this.session.attr("userName", resp.UserId);
+                                this.session.attr("userId", resp.Username);
+                                this.session.attr("userLang", resp.UserLanguage);
+                                this.session.attr("lastRequest", resp.LastRequest);
+                                if (onsuccess) {
+                                    onsuccess();
+                                }
+                            },
+                            error: function(resp) {
+                                this.session.attr("sessionId", "");
+                                this.session.attr("userName", "");
+                                this.session.attr("userId", "");
+                                this.session.attr("userLang", "");
+                                this.session.attr("lastRequest", "");
+                                console.error(resp);
+                                if (onerror) {
+                                    onerror();
+                                }
                             }
-                        },
-                        error: function(resp) {
-                            _data.attr("sessionId", "");
-                            _data.attr("userName", "");
-                            _data.attr("userId", "");
-                            _data.attr("userLang", "");
-                            _data.attr("lastRequest", "");
-                            console.error(resp);
-                            if (onerror) {
-                                onerror();
-                            }
-                        }
-                    });
-                };
-                that.data = function() {
-                    return _data;
-                };
-                that.save = function(storage) {
-                    storage.set('__session', JSON.stringify(_data));
-                };
-                that.load = function(storage) {
+                        });
+                    } catch (x) {
+                        console.error(x);
+                    }
+                },
+                save: function(storage) {
+                    storage.set('__session', JSON.stringify(this.session));
+                },
+                load: function(storage) {
                     var r = storage.get('__session');
-                    _data = JSON.parse(r);
-                };
-                that.appendHeaders = function(apiHeaders) {
+                    this.session = new can.Map(JSON.parse(r));
+                },
+                appendHeaders: function(apiHeaders) {
                     var headers = apiHeaders || {};
-                    headers['session-id'] = _data.attr("sessionId");
+                    headers['session-id'] = this.session.attr("sessionId");
                     return headers;
-                };
-            };
+                }
+            });
 
+            app.utils.namespace("models", app).Session = SessionModel;
         });

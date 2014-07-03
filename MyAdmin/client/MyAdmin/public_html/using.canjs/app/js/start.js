@@ -16,7 +16,7 @@ function($, _u1, _u2, app, topbarView, shellView) {
         return 0;
     };
     var clientSession = new app.models.Session();
-    topbarView.render("#topbar", clientSession.data());
+    topbarView.render("#topbar", clientSession);
     shellView.render("#workspace", {});
     return app;
 });

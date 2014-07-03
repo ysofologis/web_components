@@ -32,9 +32,14 @@
             <li><a href="#about">About</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
-            <li><a href="../navbar/">
-                    <span>Login:</span>    
-                    <span>{{userName}}</span>
+            <li>
+                <span>
+                    <input can-value="session.userName" type="text"/>
+                    <input can-value="session.password" type="text"/>
+                </span>
+            </li>
+            <li><a href="../navbar/" can-click='login'>
+                    <span>{{session.userName}}</span>
                 </a>
             </li>
         </ul>
