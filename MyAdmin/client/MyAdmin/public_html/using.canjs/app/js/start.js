@@ -3,21 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-define(['jquery', 'underscore', 
-            'bootstrap', 
-            'app/utils', 
-            'text!views/shell.html',
-            'text!views/topbar.html'], function($, _u1, _u2, 
-                        utils, shellView, menuView) {
+define(['jquery', 'underscore',
+    'bootstrap',
+    'app/init',
+    'views/topbar',
+    'views/shell',
+    'models/session'], 
+function($, _u1, _u2, app, topbarView, shellView) {
     console.log();
-    var app = {
-        start: function() {
-            utils.watchSize();
-            return 0;
-        },
-        utils: utils,
+    app.start = function() {
+        app.utils.watchSize();
+        return 0;
     };
-    $("#workspace").html(shellView);
-    $("#topbar").html(menuView);
+    var clientSession = new app.models.Session();
+    topbarView.render("#topbar", clientSession.data());
+    shellView.render("#workspace", {});
     return app;
 });

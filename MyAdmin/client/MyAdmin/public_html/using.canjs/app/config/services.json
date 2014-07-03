@@ -1,0 +1,8 @@
+{
+    "main": {
+        "baseUrl" : "http://ia2demo.azurewebsites.net/api"
+    },
+    "banking": {
+        "baseUrl" : "http://ia2demo.azurewebsites.net/domains/api/Banking"
+    }
+}

@@ -20,8 +20,12 @@ require.config({
         underscore: '../../bower_components/underscore/underscore',
         text: '../../bower_components/requirejs-text/text',
         bootstrap: '../../bower_components/bootstrap/dist/js/bootstrap',
+        can: '../../bower_components/canjs/amd/can',
         app: 'js',
-        views: 'views',
+        templates: 'templates',
+        models: 'js/models',
+        views: 'js/views',
+        config: 'config'
     },
     shim: {
         'bootstrap': {
