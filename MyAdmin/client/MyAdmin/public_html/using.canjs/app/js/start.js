@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-define(['jquery', 'underscore',
-    'bootstrap',
+define(['jquery', 
     'app/init',
     'views/topbar',
     'views/shell',
     'models/session'], 
-function($, _u1, _u2, app, topbarView, shellView) {
+function($, app, topbarView, shellView) {
     console.log();
     app.start = function() {
         app.utils.watchSize();

@@ -17,6 +17,20 @@ html, body {
     background: #ebebeb;
 }
 
+#topbar {
+    
+}
+
+#topbar .dropdown-menu {
+    background: #f8f8f8;
+}
+
+#topbar .navbar-form input,
+#topbar .navbar-form button{
+    margin: 5px 0;
+}
+
+
 #workspace {
     position: relative;
     top: 51px;

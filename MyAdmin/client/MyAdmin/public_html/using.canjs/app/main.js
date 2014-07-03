@@ -20,6 +20,7 @@ require.config({
         underscore: '../../bower_components/underscore/underscore',
         text: '../../bower_components/requirejs-text/text',
         bootstrap: '../../bower_components/bootstrap/dist/js/bootstrap',
+        toastr: '../../bower_components/toastr/toastr',
         can: '../../bower_components/canjs/amd/can',
         app: 'js',
         templates: 'templates',

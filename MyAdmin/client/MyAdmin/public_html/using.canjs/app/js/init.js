@@ -5,7 +5,7 @@
  */
 
 
-define(['text!config/services.json'], function(services) {
+define(['text!config/services.json', 'jquery', 'bootstrap'], function(services) {
    return {
        config: {
            services : JSON.parse(services)

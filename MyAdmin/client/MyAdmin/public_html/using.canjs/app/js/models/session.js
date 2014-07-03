@@ -5,49 +5,81 @@
  */
 
 
-define(['jquery', 'can', 'app/init', 'app/utils'],
+define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
         function($, can, app) {
             var services = app.config.services;
-            var SessionModel = can.Map.extend({
-                session: {sessionId: "", userName: "sysadmin", password: "PASSW0RD", userId: "", userLang: "", lastRequest: ""},
-                login: function(onsuccess, onerror) {
+            var SessionModel = app.models.AppModel.extend({
+                session: {
+                    sessionId: "",
+                    userName: "sysadmin",
+                    password: "PASSW0RD",
+                    userId: "",
+                    userLang: "",
+                    lastRequest: ""
+                },
+                isLoggedIn: false,
+                login: function(model, elem, event) {
+                    event.preventDefault();
                     var headers = {};
-                    var session = this.attr("session");
+                    var that = this;
+                    var session = that.attr("session");
                     var creds = '{0}:{1}'.format(session.attr("userName"), session.attr("password"));
                     headers['Authorization'] = 'basic {0}'.format(btoa(creds));
-                    try {
-                        $.ajax({
-                            url: "{0}/Sessions".format(services.main.baseUrl),
-                            async: true,
-                            contentType: 'application/json',
-                            headers: headers,
-                            method: 'POST',
-                            crossDomain: true,
-                            success: function(resp) {
-                                this.session.attr("sessionId", resp.SessionId);
-                                this.session.attr("userName", resp.UserId);
-                                this.session.attr("userId", resp.Username);
-                                this.session.attr("userLang", resp.UserLanguage);
-                                this.session.attr("lastRequest", resp.LastRequest);
-                                if (onsuccess) {
-                                    onsuccess();
-                                }
-                            },
-                            error: function(resp) {
-                                this.session.attr("sessionId", "");
-                                this.session.attr("userName", "");
-                                this.session.attr("userId", "");
-                                this.session.attr("userLang", "");
-                                this.session.attr("lastRequest", "");
-                                console.error(resp);
-                                if (onerror) {
-                                    onerror();
-                                }
-                            }
-                        });
-                    } catch (x) {
-                        console.error(x);
-                    }
+                    $.ajax({
+                        url: "{0}/Sessions".format(services.main.baseUrl),
+                        async: true,
+                        contentType: 'application/json',
+                        headers: headers,
+                        method: 'POST',
+                        crossDomain: true,
+                        success: function(resp) {
+                            that.session.attr("sessionId", resp.SessionId);
+                            that.session.attr("userName", resp.Username);
+                            that.session.attr("userId", resp.UserId);
+                            that.session.attr("userLang", resp.UserLanguage);
+                            that.session.attr("lastRequest", resp.LastRequest);
+                            that.attr('isLoggedIn', true);
+                            app.utils.showInfo("Logged In!");
+                        },
+                        error: function(resp) {
+                            app.utils.showError(resp.statusText);
+                            that.attr('isLoggedIn', false);
+                            that.session.attr("sessionId", "");
+                            that.session.attr("userName", "");
+                            that.session.attr("userId", "");
+                            that.session.attr("userLang", "");
+                            that.session.attr("lastRequest", "");
+                            console.error(resp);
+                        }
+                    });
+                },
+                logout: function(model, elem, event) {
+                    event.preventDefault();
+                    var that = this;
+                    console.log();
+                    var headers = that.appendHeaders();
+                    var sessionId = that.attr('session').attr('sessionId');
+                    $.ajax({
+                        url: "{0}/Sessions/{1}".format(services.main.baseUrl, sessionId),
+                        async: true,
+                        contentType: 'application/json',
+                        headers: headers,
+                        method: 'DELETE',
+                        crossDomain: true,
+                        success: function(resp) {
+                            that.attr('isLoggedIn', false);
+                            that.session.attr("sessionId", "");
+                            that.session.attr("userName", "");
+                            that.session.attr("userId", "");
+                            that.session.attr("userLang", "");
+                            that.session.attr("lastRequest", "");
+                            app.utils.showInfo("Logged Out!");
+                        },
+                        error: function(resp) {
+                            console.error(resp);
+                            app.utils.showError(resp.statusText);
+                        }
+                    });
                 },
                 save: function(storage) {
                     storage.set('__session', JSON.stringify(this.session));

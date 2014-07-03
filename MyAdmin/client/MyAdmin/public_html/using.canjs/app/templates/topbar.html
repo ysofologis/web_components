@@ -32,16 +32,34 @@
             <li><a href="#about">About</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
+            {{#isLoggedIn}}
             <li>
-                <span>
-                    <input can-value="session.userName" type="text"/>
-                    <input can-value="session.password" type="text"/>
-                </span>
-            </li>
-            <li><a href="../navbar/" can-click='login'>
-                    <span>{{session.userName}}</span>
+                <a href="#">
+                    {{session.userName}}
                 </a>
             </li>
+            <li>
+                <a href="#" can-click='logout'>
+                    Logout
+                </a>
+            </li>
+            {{/isLoggedIn}}
+            {{^isLoggedIn}}
+            <li class="dropdown">
+                <a class="dropdown-toggle" href="#" data-toggle="dropdown">Login In <strong class="caret"></strong></a>
+                <ul class="dropdown-menu" role="menu">
+                    <li>
+                        <form class="form navbar-form">
+                            <div class="form-group">
+                                <input can-value="session.userName" type="text" class="form-control"/>
+                                <input can-value="session.password" type="text" class="form-control"/>
+                            </div>
+                            <button can-click="login" class="btn btn-success pull-right">Log In</button>
+                        </form>
+                    </li>
+                </ul>
+            </li>            
+            {{/isLoggedIn}}
         </ul>
     </div><!--/.nav-collapse -->
 </div>

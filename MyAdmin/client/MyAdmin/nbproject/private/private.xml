@@ -3,10 +3,20 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/index.html</file>
             <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/main.js</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/views/topbar.js</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/templates/topbar.html</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/models/session.js</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/index.html</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/extensions.js</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/bower_components/requirejs/require.js</file>
             <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/start.js</file>
-            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/css/main.css</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/templates/shell.html</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/utils.js</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/init.js</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/views/shell.js</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/config/services.json</file>
+            <file>file:/var/storage/DEVEL/projects/07_Github/web_components/MyAdmin/client/MyAdmin/public_html/bower_components/canjs/amd/can.js</file>
         </group>
     </open-files>
 </project-private>

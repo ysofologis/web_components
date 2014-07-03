@@ -4,9 +4,24 @@
  * and open the template in the editor.
  */
 
-define(['jquery', 'can', 'app/init', 'underscore', 'bootstrap', 'app/extensions'],
-        function($, can, app) {
+define(['jquery', 'can', 'app/init', 'toastr', 'underscore', 'bootstrap', 'app/extensions'],
+        function($, can, app, toastr) {
             console.log();
+
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "positionClass": "toast-bottom-right",
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
             app.utils = {
                 watchSize: function() {
                     $(window).resize(function(e) {
@@ -25,6 +40,12 @@ define(['jquery', 'can', 'app/init', 'underscore', 'bootstrap', 'app/extensions'
                         current = current[chunks[i]];
                     }
                     return current;
+                },
+                showInfo: function(message, title) {
+                    toastr.success(message, title);
+                },
+                showError: function(message, title) {
+                    toastr.error(message, title);
                 }
             };
         });
