@@ -25,6 +25,7 @@ define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
                     var session = that.attr("session");
                     var creds = '{0}:{1}'.format(session.attr("userName"), session.attr("password"));
                     headers['Authorization'] = 'basic {0}'.format(btoa(creds));
+                    app.utils.startProgress();
                     $.ajax({
                         url: "{0}/Sessions".format(services.main.baseUrl),
                         async: true,
@@ -40,6 +41,7 @@ define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
                             that.session.attr("lastRequest", resp.LastRequest);
                             that.attr('isLoggedIn', true);
                             app.utils.showInfo("Logged In!");
+                            app.utils.endProgress();
                         },
                         error: function(resp) {
                             app.utils.showError(resp.statusText);
@@ -49,35 +51,40 @@ define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
                             that.session.attr("userId", "");
                             that.session.attr("userLang", "");
                             that.session.attr("lastRequest", "");
+                            app.utils.endProgress();
                             console.error(resp);
                         }
                     });
                 },
                 logout: function(model, elem, event) {
                     event.preventDefault();
-                    var that = this;
                     console.log();
-                    var headers = that.appendHeaders();
-                    var sessionId = that.attr('session').attr('sessionId');
-                    $.ajax({
-                        url: "{0}/Sessions/{1}".format(services.main.baseUrl, sessionId),
-                        async: true,
-                        contentType: 'application/json',
-                        headers: headers,
-                        method: 'DELETE',
-                        crossDomain: true,
-                        success: function(resp) {
-                            that.attr('isLoggedIn', false);
-                            that.session.attr("sessionId", "");
-                            that.session.attr("userName", "");
-                            that.session.attr("userId", "");
-                            that.session.attr("userLang", "");
-                            that.session.attr("lastRequest", "");
-                            app.utils.showInfo("Logged Out!");
-                        },
-                        error: function(resp) {
-                            console.error(resp);
-                            app.utils.showError(resp.statusText);
+                    var that = this;
+                    app.utils.confirm("Are you sure you want to logout ?", function(result) {
+                        if (result) {
+                            var headers = that.appendHeaders();
+                            var sessionId = that.attr('session').attr('sessionId');
+                            $.ajax({
+                                url: "{0}/Sessions/{1}".format(services.main.baseUrl, sessionId),
+                                async: true,
+                                contentType: 'application/json',
+                                headers: headers,
+                                method: 'DELETE',
+                                crossDomain: true,
+                                success: function(resp) {
+                                    that.attr('isLoggedIn', false);
+                                    that.session.attr("sessionId", "");
+                                    that.session.attr("userName", "");
+                                    that.session.attr("userId", "");
+                                    that.session.attr("userLang", "");
+                                    that.session.attr("lastRequest", "");
+                                    app.utils.showInfo("Logged Out!");
+                                },
+                                error: function(resp) {
+                                    console.error(resp);
+                                    app.utils.showError(resp.statusText);
+                                }
+                            });
                         }
                     });
                 },

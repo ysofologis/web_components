@@ -21,6 +21,8 @@ require.config({
         text: '../../bower_components/requirejs-text/text',
         bootstrap: '../../bower_components/bootstrap/dist/js/bootstrap',
         toastr: '../../bower_components/toastr/toastr',
+        bootbox: '../../bower_components/bootbox/bootbox',
+        spin: '../../bower_components/spinjs/spin',
         can: '../../bower_components/canjs/amd/can',
         app: 'js',
         templates: 'templates',
