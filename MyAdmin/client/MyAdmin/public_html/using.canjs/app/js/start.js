@@ -7,15 +7,15 @@ define(['jquery',
     'app/init',
     'views/topbar',
     'views/shell',
-    'models/session'], 
+    'models/topbar'], 
 function($, app, topbarView, shellView) {
     console.log();
     app.start = function() {
         app.utils.watchSize();
         return 0;
     };
-    var clientSession = new app.models.Session();
-    topbarView.render("#topbar", clientSession);
+    var topbar = new app.models.TopbarModel();
+    topbarView.render("#topbar", topbar);
     shellView.render("#workspace", {});
     return app;
 });

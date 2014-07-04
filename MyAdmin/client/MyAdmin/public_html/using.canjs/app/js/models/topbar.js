@@ -8,7 +8,7 @@
 define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
         function($, can, app) {
             var services = app.config.services;
-            var SessionModel = app.models.AppModel.extend({
+            var TopbarModel = app.models.AppModel.extend({
                 session: {
                     sessionId: "",
                     // userName: "sysadmin",
@@ -103,5 +103,5 @@ define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
                 }
             });
 
-            app.utils.namespace("models", app).Session = SessionModel;
+            app.utils.namespace("models", app).TopbarModel = TopbarModel;
         });
