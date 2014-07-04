@@ -5,9 +5,21 @@
  */
 
 
-define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
-        function($, can, app) {
+define(['jquery', 'can', 'app/init','underscore',
+    'text!config/topbar.json',
+    'app/utils', 'models/base'],
+        function($, can, app, _, topbarJson) {
             var services = app.config.services;
+            var topbarConf = JSON.parse(topbarJson);
+            var resourcesConf = _.findWhere(topbarConf.topItems, {name: 'resources'}).items;
+            resourcesConf = _.map( resourcesConf, function(item, ix){
+                if(ix == resourcesConf.length - 1) {
+                    item.isLast = true;
+                } else {
+                    item.isLast = false;
+                }
+                return item;
+            });
             var TopbarModel = app.models.AppModel.extend({
                 session: {
                     sessionId: "",
@@ -18,6 +30,7 @@ define(['jquery', 'can', 'app/init', 'app/utils', 'models/base'],
                     userLang: "",
                     lastRequest: ""
                 },
+                resources: resourcesConf,
                 isLoggedIn: false,
                 login: function(model, elem, event) {
                     event.preventDefault();

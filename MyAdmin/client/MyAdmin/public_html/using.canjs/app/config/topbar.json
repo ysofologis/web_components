@@ -1,0 +1,38 @@
+{
+    "topItems": [
+        {
+            "name" : "resources",
+            "items": [
+                {
+                    "group": "Authorization",
+                    "links" : [
+                        { "text" : "Groups", "route": "#/resources/auth/groups" },
+                        { "text" : "Users", "route": "#/resources/auth/users" }
+                    ]
+                },
+                {
+                    "group": "Workflow",
+                    "links" : [
+                        { "text" : "Task Definitions", "route": "resources/workflow/taskdefs" },
+                        { "text" : "Case Definitions", "route": "resources/workflow/casedefs" }
+                    ]
+                },
+                {
+                    "group": "Client",
+                    "links" : [
+                        { "text" : "Task Inbox", "route": "resources/client/taskinbox" }
+                    ]
+                },
+                {
+                    "group": "Org Model",
+                    "links" : [
+                        { "text" : "Units", "route": "resources/orgmodel/units" },
+                        { "text" : "Positions", "route": "resources/orgmodel/positions" },
+                        { "text" : "Roles", "route": "resources/orgmodel/roles" },
+                        { "text" : "Groups", "route": "resources/orgmodel/groups" }
+                    ]
+                }
+            ]
+        }
+    ]
+}

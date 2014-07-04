@@ -14,6 +14,7 @@
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Resources<b class="caret"></b></a>
                 <ul class="dropdown-menu">
+                    <!--
                     <li class="dropdown-header">Authorization</li>
                     <li><a href="#">Groups</a></li>
                     <li><a href="#">Users</a></li>
@@ -30,6 +31,18 @@
                     <li><a href="#">Positions</a></li>
                     <li><a href="#">Roles</a></li>
                     <li><a href="#">Groups</a></li>
+                    -->
+                    {{#each resources}}
+                    <li class="dropdown-header">{{group}}</li>
+                    {{#each links}}
+                        <li>
+                            <a href="{{route}}">{{text}}</a>
+                        </li>
+                    {{/each}}
+                    {{^isLast}}
+                    <li class="divider"></li>
+                    {{/isLast}}
+                    {{/each}}
                 </ul>
             </li>
             <li><a href="#about">About</a></li>

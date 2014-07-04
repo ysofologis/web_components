@@ -93,5 +93,11 @@ define(['jquery', 'can', 'app/init',
                     spinner.stop();
                 }
             };
+            
+            can.mustache.registerHelper('isLastItem',
+            function(index) {
+                return index;
+            });
+            
         });
 
