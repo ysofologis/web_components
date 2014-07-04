@@ -65,6 +65,14 @@ define(['jquery', 'can', 'app/init',
                     }
                     return current;
                 },
+                getClass: function(root_ns, className) {
+                  var classParts = className.split('.');
+                  var current_class = root_ns;
+                  for(var ix = 0; ix < classParts.length; ix ++) {
+                      current_class = current_class[ classParts[ix] ];
+                  }
+                  return current_class;
+                },
                 showInfo: function(message, title) {
                     toastr.success(message, title);
                 },

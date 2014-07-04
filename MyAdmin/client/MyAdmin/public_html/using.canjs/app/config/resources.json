@@ -1,0 +1,14 @@
+{
+    "mapping" : [
+        {
+            "path": "resources/auth/users",
+            "template": "templates/resources/users.html",
+            "model" : "app.models.UserModel"
+        },
+        {
+            "path": "resources/auth/groups",
+            "template": "templates/resources/groups.html",
+            "model" : "app.models.AppModel"
+        }
+    ]
+}

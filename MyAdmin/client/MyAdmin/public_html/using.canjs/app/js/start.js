@@ -8,8 +8,9 @@ define(['jquery',
     'app/router',
     'views/topbar',
     'views/shell',
+    'views/resource',
     'models/topbar'], 
-function($, app, router, topbarView, shellView) {
+function($, app, router, topbarView, shellView, resourceView) {
     console.log();
     app.start = function() {
         app.utils.watchSize();
@@ -17,8 +18,13 @@ function($, app, router, topbarView, shellView) {
         return 0;
     };
     app.router = router;
-    app.router.mapPath(":context/:group/:resource", function(pathData){
+    app.router.mapPath("resources/:group/:resource", function(pathData){
       console.log(pathData);  
+      var viewPath = "{0}/{1}/{2}".format("resources", pathData.group,pathData.resource);
+      var view = resourceView[viewPath];
+      if(view) {
+          view.render();
+      }
     });
     
     var topbar = new app.models.TopbarModel();

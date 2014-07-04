@@ -5,22 +5,22 @@
  */
 
 
-define(['jquery', 'can', 'app/init','underscore',
+define(['jquery', 'can', 'app/init', 'underscore',
     'text!config/topbar.json',
     'app/utils', 'models/base'],
         function($, can, app, _, topbarJson) {
             var services = app.config.services;
             var topbarConf = JSON.parse(topbarJson);
             var resourcesConf = _.findWhere(topbarConf.topItems, {name: 'resources'}).items;
-            resourcesConf = _.map( resourcesConf, function(item, ix){
-                if(ix == resourcesConf.length - 1) {
+            resourcesConf = _.map(resourcesConf, function(item, ix) {
+                if (ix == resourcesConf.length - 1) {
                     item.isLast = true;
                 } else {
                     item.isLast = false;
                 }
                 return item;
             });
-            var TopbarModel = app.models.AppModel.extend({
+            var proto = {
                 session: {
                     sessionId: "",
                     // userName: "sysadmin",
@@ -32,6 +32,9 @@ define(['jquery', 'can', 'app/init','underscore',
                 },
                 resources: resourcesConf,
                 isLoggedIn: false,
+                init: function() {
+                    console.log();
+                },
                 login: function(model, elem, event) {
                     event.preventDefault();
                     var headers = {};
@@ -114,7 +117,6 @@ define(['jquery', 'can', 'app/init','underscore',
                     headers['session-id'] = this.session.attr("sessionId");
                     return headers;
                 }
-            });
-
-            app.utils.namespace("models", app).TopbarModel = TopbarModel;
+            };
+            app.utils.namespace("models", app).TopbarModel = app.models.AppModel.extend(proto);;
         });
