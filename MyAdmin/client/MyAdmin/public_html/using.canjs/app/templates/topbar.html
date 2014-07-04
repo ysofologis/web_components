@@ -14,24 +14,6 @@
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Resources<b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                    <!--
-                    <li class="dropdown-header">Authorization</li>
-                    <li><a href="#">Groups</a></li>
-                    <li><a href="#">Users</a></li>
-                    <li class="divider"></li>
-                    <li class="dropdown-header">Workflow</li>
-                    <li><a href="#">Task Definitions</a></li>
-                    <li><a href="#">Case Definitions</a></li>
-                    <li class="divider"></li>
-                    <li class="dropdown-header">Client</li>
-                    <li><a href="#">Task Inbox</a></li>
-                    <li class="divider"></li>
-                    <li class="dropdown-header">Org Model</li>
-                    <li><a href="#">Units</a></li>
-                    <li><a href="#">Positions</a></li>
-                    <li><a href="#">Roles</a></li>
-                    <li><a href="#">Groups</a></li>
-                    -->
                     {{#each resources}}
                     <li class="dropdown-header">{{group}}</li>
                     {{#each links}}
@@ -51,7 +33,7 @@
             {{#isLoggedIn}}
             <li>
                 <a href="#">
-                    {{session.userName}}
+                    <b style="color:rgba(0,200,50,0.7)">{{session.userName}}</b>
                 </a>
             </li>
             <li>

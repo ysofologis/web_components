@@ -6,15 +6,15 @@
                 {
                     "group": "Authorization",
                     "links" : [
-                        { "text" : "Groups", "route": "#/resources/auth/groups" },
-                        { "text" : "Users", "route": "#/resources/auth/users" }
+                        { "text" : "Groups", "route": "#!resources/auth/groups" },
+                        { "text" : "Users", "route": "#!resources/auth/users" }
                     ]
                 },
                 {
                     "group": "Workflow",
                     "links" : [
-                        { "text" : "Task Definitions", "route": "resources/workflow/taskdefs" },
-                        { "text" : "Case Definitions", "route": "resources/workflow/casedefs" }
+                        { "text" : "Task Definitions", "route": "#!resources/workflow/taskdefs" },
+                        { "text" : "Case Definitions", "route": "#!resources/workflow/casedefs" }
                     ]
                 },
                 {

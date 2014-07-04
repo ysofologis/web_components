@@ -17,6 +17,9 @@ function($, app, router, topbarView, shellView) {
         return 0;
     };
     app.router = router;
+    app.router.mapPath("resources/:group/:resource", function(pathData){
+      console.log(pathData);  
+    });
     
     var topbar = new app.models.TopbarModel();
     topbarView.render("#topbar", topbar);

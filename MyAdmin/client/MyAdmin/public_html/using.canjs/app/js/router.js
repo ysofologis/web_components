@@ -5,15 +5,46 @@
  */
 
 
-define(['can', 'app/utils'], function(can, utils) { 
+define(['can', 'app/utils'], function(can, utils) {
+
+    var routingCallbacks = {};
+
+    can.route.ready(false);
+    /*
+    var RoutingControl = can.Control({
+        'route': function(data) {
+            console.log();
+        },
+        ':context/:group/:resource route': function(data) {
+            console.log();
+        },
+        ':context/:group/:resource/:id route': function(data) {
+            console.log();
+        }
+    });*/
+    var _routing = null;
+    can.route.bind('change', function(ev, attr, how, newVal, oldVal) {
+        console.log();
+    });
+
     var router = {
         start: function() {
+            var RoutingControl = can.Control(routingCallbacks);
+            _routing = new RoutingControl(document);
             console.log("starting routing");
+            can.route.ready(true);
         },
         navigateTo: function(path) {
-            console.log( "navigating to [{0}]".format(path));
+            console.log("navigating to [{0}]".format(path));
+        },
+        mapPath: function(path, callback) {
+            routingCallbacks[path + " route"] = function(data) {
+                if(callback) {
+                    callback(data);
+                }
+            };
         }
     };
-    
+
     return router;
 });
