@@ -5,15 +5,19 @@
  */
 define(['jquery', 
     'app/init',
+    'app/router',
     'views/topbar',
     'views/shell',
     'models/topbar'], 
-function($, app, topbarView, shellView) {
+function($, app, router, topbarView, shellView) {
     console.log();
     app.start = function() {
         app.utils.watchSize();
+        router.start();
         return 0;
     };
+    app.router = router;
+    
     var topbar = new app.models.TopbarModel();
     topbarView.render("#topbar", topbar);
     shellView.render("#workspace", {});
