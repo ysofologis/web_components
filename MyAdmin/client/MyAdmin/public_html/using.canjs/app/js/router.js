@@ -7,7 +7,7 @@
 
 define(['can', 'app/utils'], function(can, utils) {
 
-    var routingCallbacks = {};
+    var _routingCallbacks = {};
 
     can.route.ready(false);
     /*
@@ -29,7 +29,7 @@ define(['can', 'app/utils'], function(can, utils) {
 
     var router = {
         start: function() {
-            var RoutingControl = can.Control(routingCallbacks);
+            var RoutingControl = can.Control(_routingCallbacks);
             _routing = new RoutingControl(document);
             console.log("starting routing");
             can.route.ready(true);
@@ -38,11 +38,14 @@ define(['can', 'app/utils'], function(can, utils) {
             console.log("navigating to [{0}]".format(path));
         },
         mapPath: function(path, callback) {
-            routingCallbacks[path + " route"] = function(data) {
+            _routingCallbacks[path + " route"] = function(data) {
                 if(callback) {
                     callback(data);
                 }
             };
+        },
+        getMappedPaths: function() {
+            return Object.keys(_routingCallbacks);
         }
     };
 

@@ -17,7 +17,7 @@ function($, app, router, topbarView, shellView) {
         return 0;
     };
     app.router = router;
-    app.router.mapPath("resources/:group/:resource", function(pathData){
+    app.router.mapPath(":context/:group/:resource", function(pathData){
       console.log(pathData);  
     });
     
