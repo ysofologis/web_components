@@ -35,6 +35,14 @@ define(['jquery', 'can', 'app/init', 'underscore',
                 init: function() {
                     console.log();
                 },
+                updateSession: function(session) {
+                    this.session.attr("sessionId", session.SessionId);
+                    this.session.attr("userName", session.Username);
+                    this.session.attr("userId", session.UserId);
+                    this.session.attr("userLang", session.UserLanguage);
+                    this.session.attr("lastRequest", session.LastRequest);
+                    this.attr('isLoggedIn', session ? true : false);
+                },
                 login: function(model, elem, event) {
                     event.preventDefault();
                     var headers = {};
@@ -58,6 +66,7 @@ define(['jquery', 'can', 'app/init', 'underscore',
                             that.session.attr("lastRequest", resp.LastRequest);
                             that.attr('isLoggedIn', true);
                             app.utils.showInfo("Logged In!");
+                            app.eventHub.publish(app.constants.events.USER_LOGGED_IN, resp);
                             app.utils.endProgress();
                         },
                         error: function(resp) {
@@ -79,8 +88,10 @@ define(['jquery', 'can', 'app/init', 'underscore',
                     var that = this;
                     app.utils.confirm("Are you sure you want to logout ?", function(result) {
                         if (result) {
+                            app.utils.startProgress();
                             var headers = that.appendHeaders();
                             var sessionId = that.attr('session').attr('sessionId');
+                            app.eventHub.publish("app-disconnected");
                             $.ajax({
                                 url: "{0}/Sessions/{1}".format(services.main.baseUrl, sessionId),
                                 async: true,
@@ -95,11 +106,14 @@ define(['jquery', 'can', 'app/init', 'underscore',
                                     that.session.attr("userId", "");
                                     that.session.attr("userLang", "");
                                     that.session.attr("lastRequest", "");
+                                    app.eventHub.publish(app.constants.events.USER_LOGGED_OUT);
                                     app.utils.showInfo("Logged Out!");
+                                    app.utils.endProgress();
                                 },
                                 error: function(resp) {
                                     console.error(resp);
                                     app.utils.showError(resp.statusText);
+                                    app.utils.endProgress();
                                 }
                             });
                         }
@@ -118,5 +132,5 @@ define(['jquery', 'can', 'app/init', 'underscore',
                     return headers;
                 }
             };
-            app.utils.namespace("models", app).TopbarModel = app.models.AppModel.extend(proto);;
+            app.utils.namespace("models", app).SessionModel = app.models.AppModel.extend(proto);;
         });

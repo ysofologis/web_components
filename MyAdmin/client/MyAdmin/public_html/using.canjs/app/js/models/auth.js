@@ -5,17 +5,28 @@
  */
 
 define(['can', 'app/init', 'models/base'], function(can, app) {
-    var UserModel = can.Model.extend(
-            {
-                findAll : 'GET {0}/Users'.format(app.config.services.main.baseUrl),
-                findOne : 'GET {0}/Users/{Id}'.format(app.config.services.main.baseUrl),
-                create : 'POST {0}/Users'.format(app.config.services.main.baseUrl),
-                update : 'PUT {0}/Users/{Id}'.format(app.config.services.main.baseUrl),
-                destroy : 'DELETE {0}/Users/{Id}'.format(app.config.services.main.baseUrl)
-            },
-            {});
-     
-     var items = UserModel.findAll();
-     
-     app.utils.namespace("models", app).UserModel = UserModel;
+    var ModelConf = function(resourceName) {
+        var that = this;
+        that.findAll = 'GET {0}/{1}?Page={Page}&PageSize={PageSize}'.format(app.config.services.main.baseUrl, resourceName);
+        that.findOne = 'GET {0}/{1}/{Id}'.format(app.config.services.main.baseUrl, resourceName);
+        that.create = 'POST {0}/{1}'.format(app.config.services.main.baseUrl, resourceName);
+        that.update = 'PUT {0}/{1}/{Id}'.format(app.config.services.main.baseUrl, resourceName);
+        that.destroy = 'DELETE {0}/{1}/{Id}'.format(app.config.services.main.baseUrl, resourceName);
+        that.parseModels = function(data){
+            return data.Items;
+        };
+        return that;
+    };
+    
+    var UserModel = can.Model.extend(new ModelConf('Users'),{});
+
+    app.eventHub.subscribe(app.constants.events.APP_CONNECTED, function(sessionId) {
+        UserModel.findAll({ Page:1, PageSize: 10 }, function(data) {
+            console.log(data);
+        }, function (err) {
+            console.log(err);
+        });
+    });
+
+    app.utils.namespace("models", app).UserModel = UserModel;
 });

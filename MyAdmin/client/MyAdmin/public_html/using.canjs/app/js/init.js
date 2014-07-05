@@ -5,10 +5,16 @@
  */
 
 
-define(['text!config/services.json', 'jquery', 'bootstrap'], function(services) {
-   return {
+define(['text!config/services.json',
+    'app/constants','app/eventhub', 'app/storage',
+    'bootstrap'], function(services, constants, eventHub, storage) {
+   var app = {
        config: {
            services : JSON.parse(services)
-       }
+       },
+       constants: constants,
+       eventHub: eventHub,
+       storage: storage
    }; 
+   return app;
 });
