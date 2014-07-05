@@ -36,6 +36,7 @@ define(['can', 'app/utils'], function(can, utils) {
         },
         navigateTo: function(path) {
             console.log("navigating to [{0}]".format(path));
+            location.hash = "#{0}".format(path);
         },
         mapPath: function(path, callback) {
             _routingCallbacks[path + " route"] = function(data) {

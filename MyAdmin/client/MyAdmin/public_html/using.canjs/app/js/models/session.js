@@ -132,5 +132,5 @@ define(['jquery', 'can', 'app/init', 'underscore',
                     return headers;
                 }
             };
-            app.utils.namespace("models", app).SessionModel = app.models.AppModel.extend(proto);;
+            app.utils.namespace("models", app).SessionModel = app.models.AppModel.extend(proto);
         });

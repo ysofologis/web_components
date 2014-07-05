@@ -59,6 +59,7 @@ function($, app, router, topbarView, shellView, resourceView) {
     
     topbarView.render("#topbar", topbar);
     shellView.render("#workspace", {});
+    router.navigateTo("");
     
     return app;
 });
