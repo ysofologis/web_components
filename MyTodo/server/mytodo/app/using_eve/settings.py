@@ -4,7 +4,7 @@ Created on Jun 14, 2014
 @author: freesrc
 '''
 
-MONGO_HOST = 'nosql-srv'
+MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
 #MONGO_USERNAME = 'freesrc'
 #MONGO_PASSWORD = '123456789'
@@ -20,7 +20,9 @@ RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 # individual items  (defaults to read-only item access).
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
-
+X_DOMAINS = '*'
+X_HEADERS = '*'
+IF_MATCH = False
 
 person_schema = {
     # Schema definition, based on Cerberus grammar. Check the Cerberus project
@@ -80,6 +82,38 @@ people = {
 
     'schema': person_schema
 }
+
+user_schema = {
+    # Schema definition, based on Cerberus grammar. Check the Cerberus project
+    # (https://github.com/nicolaiarocci/cerberus) for details.
+    'Username': {
+        'type': 'string',
+        'minlength': 5,
+        'maxlength': 20,
+        'required': True,
+        'unique': True,
+    },
+    'password': {
+        'type': 'string',
+        'minlength': 6,
+        'maxlength': 15,
+        'required': True,
+    },
+}
+
+users = {
+    'item_title': 'users',
+    'additional_lookup': {
+        'url': 'regex("[\w]+")',
+        'field': 'Username'
+    },
+    'cache_control': 'max-age=10,must-revalidate',
+    'cache_expires': 10,
+    'resource_methods': ['GET', 'POST'],
+    'item_methods': ['GET', 'PATCH', 'DELETE', 'PUT'],
+    'schema': user_schema
+}
+
 
 task_status_schema = {
         'type': 'string',
@@ -164,6 +198,7 @@ tasks = {
 }
 
 DOMAIN = {
-          'people': people,
-          'tasks' : tasks
+		'people': people,
+        'tasks' : tasks,
+		'users' : users,
 }
