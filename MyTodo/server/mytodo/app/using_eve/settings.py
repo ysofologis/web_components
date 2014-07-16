@@ -4,7 +4,10 @@ Created on Jun 14, 2014
 @author: freesrc
 '''
 
+<<<<<<< HEAD
 # MONGO_HOST = 'nosql-srv'
+=======
+>>>>>>> 20d18da0bc7d11372407e6f9cfc92fb422f7b10e
 MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
 #MONGO_USERNAME = 'freesrc'
@@ -24,7 +27,9 @@ RESOURCE_METHODS = ['GET', 'POST', 'DELETE']
 # individual items  (defaults to read-only item access).
 ITEM_METHODS = ['GET', 'PATCH', 'PUT', 'DELETE']
 
-
+X_DOMAINS = '*'
+X_HEADERS = '*'
+IF_MATCH = False
 
 person_schema = {
     # Schema definition, based on Cerberus grammar. Check the Cerberus project
@@ -85,28 +90,41 @@ people = {
     'schema': person_schema
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 20d18da0bc7d11372407e6f9cfc92fb422f7b10e
 user_schema = {
     # Schema definition, based on Cerberus grammar. Check the Cerberus project
     # (https://github.com/nicolaiarocci/cerberus) for details.
     'Username': {
         'type': 'string',
         'minlength': 5,
+<<<<<<< HEAD
         'maxlength': 15,
         'unique': True,
         'required': True,
+=======
+        'maxlength': 20,
+        'required': True,
+        'unique': True,
+>>>>>>> 20d18da0bc7d11372407e6f9cfc92fb422f7b10e
     },
     'password': {
         'type': 'string',
         'minlength': 6,
         'maxlength': 15,
         'required': True,
+<<<<<<< HEAD
         # talk about hard constraints! For the purpose of the demo
         # 'lastname' is an API entry-point, so we need it to be unique.
+=======
+>>>>>>> 20d18da0bc7d11372407e6f9cfc92fb422f7b10e
     },
 }
 
 users = {
+<<<<<<< HEAD
     # 'title' tag used in item links. Defaults to the resource title minus
     # the final, plural 's' (works fine in most cases but not for 'people')
     'item_title': 'users',
@@ -115,10 +133,14 @@ users = {
     # '/people/<ObjectId>'. We leave it untouched, and we also enable an
     # additional read-only entry point. This way consumers can also perform
     # GET requests at '/people/<lastname>'.
+=======
+    'item_title': 'users',
+>>>>>>> 20d18da0bc7d11372407e6f9cfc92fb422f7b10e
     'additional_lookup': {
         'url': 'regex("[\w]+")',
         'field': 'Username'
     },
+<<<<<<< HEAD
 
     # We choose to override global cache-control directives for this resource.
     'cache_control': 'max-age=10,must-revalidate',
@@ -127,6 +149,12 @@ users = {
     # most global settings can be overridden at resource level
     'resource_methods': ['GET', 'POST'],
 
+=======
+    'cache_control': 'max-age=10,must-revalidate',
+    'cache_expires': 10,
+    'resource_methods': ['GET', 'POST'],
+    'item_methods': ['GET', 'PATCH', 'DELETE', 'PUT'],
+>>>>>>> 20d18da0bc7d11372407e6f9cfc92fb422f7b10e
     'schema': user_schema
 }
 
@@ -214,7 +242,13 @@ tasks = {
 }
 
 DOMAIN = {
+<<<<<<< HEAD
           'people': people,
           'tasks' : tasks,
           'users' : users,
+=======
+		'people': people,
+        'tasks' : tasks,
+		'users' : users,
+>>>>>>> 20d18da0bc7d11372407e6f9cfc92fb422f7b10e
 }

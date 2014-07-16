@@ -27,7 +27,6 @@ and open the template in the editor.
         </div>
     </div>
 
-    <!-- == templates == -->
     <!-- == main layout == -->
     <script id="main-layout-template" type="text/x-kendo-layout">
         <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8  full-height">
@@ -101,8 +100,9 @@ and open the template in the editor.
             ];
 
             _dataSource = new kendo.data.DataSource({
-                data: collectionItems,
+                data: collectionItems
             });
+
             var appDefaults = relational.widgets.collectionviewer.defaults;
 
             // immutable !!
