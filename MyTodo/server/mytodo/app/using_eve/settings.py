@@ -4,11 +4,15 @@ Created on Jun 14, 2014
 @author: freesrc
 '''
 
-MONGO_HOST = 'nosql-srv'
+# MONGO_HOST = 'nosql-srv'
+MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
 #MONGO_USERNAME = 'freesrc'
 #MONGO_PASSWORD = '123456789'
 MONGO_DBNAME = 'bucket'
+X_DOMAINS = "*"
+X_HEADERS = "*"
+IF_MATCH = False
 
 
 # Enable reads (GET), inserts (POST) and DELETE for resources/collections
@@ -80,6 +84,52 @@ people = {
 
     'schema': person_schema
 }
+
+
+user_schema = {
+    # Schema definition, based on Cerberus grammar. Check the Cerberus project
+    # (https://github.com/nicolaiarocci/cerberus) for details.
+    'Username': {
+        'type': 'string',
+        'minlength': 5,
+        'maxlength': 15,
+        'unique': True,
+        'required': True,
+    },
+    'password': {
+        'type': 'string',
+        'minlength': 6,
+        'maxlength': 15,
+        'required': True,
+        # talk about hard constraints! For the purpose of the demo
+        # 'lastname' is an API entry-point, so we need it to be unique.
+    },
+}
+
+users = {
+    # 'title' tag used in item links. Defaults to the resource title minus
+    # the final, plural 's' (works fine in most cases but not for 'people')
+    'item_title': 'users',
+
+    # by default the standard item entry point is defined as
+    # '/people/<ObjectId>'. We leave it untouched, and we also enable an
+    # additional read-only entry point. This way consumers can also perform
+    # GET requests at '/people/<lastname>'.
+    'additional_lookup': {
+        'url': 'regex("[\w]+")',
+        'field': 'Username'
+    },
+
+    # We choose to override global cache-control directives for this resource.
+    'cache_control': 'max-age=10,must-revalidate',
+    'cache_expires': 10,
+
+    # most global settings can be overridden at resource level
+    'resource_methods': ['GET', 'POST'],
+
+    'schema': user_schema
+}
+
 
 task_status_schema = {
         'type': 'string',
@@ -165,5 +215,6 @@ tasks = {
 
 DOMAIN = {
           'people': people,
-          'tasks' : tasks
+          'tasks' : tasks,
+          'users' : users,
 }
