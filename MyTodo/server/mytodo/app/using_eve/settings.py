@@ -4,12 +4,13 @@ Created on Jun 14, 2014
 @author: freesrc
 '''
 
-MONGO_HOST = 'nosql-srv'
+MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
-#MONGO_USERNAME = 'freesrc'
-#MONGO_PASSWORD = '123456789'
 MONGO_DBNAME = 'bucket'
 
+X_DOMAINS = '*'
+X_HEADERS = '*'
+IF_MATCH = False
 
 # Enable reads (GET), inserts (POST) and DELETE for resources/collections
 # (if you omit this line, the API will default to ['GET'] and provide
@@ -80,6 +81,39 @@ people = {
 
     'schema': person_schema
 }
+
+
+user_schema = {
+    'Username': {
+        'type': 'string',
+        'minlength': 5,
+        'maxlength': 20,
+        'required': True,
+        'unique': True,
+    },
+    'password': {
+        'type': 'string',
+        'minlength': 5,
+        'maxlength': 15,
+        'required': True,
+    },
+}
+
+users = {
+    'item_title': 'users',
+
+    'additional_lookup': {
+        'url': 'regex("[\w]+")',
+        'field': 'Username'
+    },
+    'cache_control': 'max-age=10,must-revalidate',
+    'cache_expires': 10,
+    'resource_methods': ['GET', 'POST', 'DELETE'],
+    'item_methods': ['GET', 'PUT', 'PATCH', 'DELETE'],
+    'schema': user_schema
+}
+
+
 
 task_status_schema = {
         'type': 'string',
@@ -165,5 +199,7 @@ tasks = {
 
 DOMAIN = {
           'people': people,
-          'tasks' : tasks
+          'tasks' : tasks,
+          'users': users,
 }
+
