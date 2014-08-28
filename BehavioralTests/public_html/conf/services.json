@@ -1,7 +1,0 @@
-[
-    {
-        "name": "atlas-isofol",
-        "baseUrl": "http://isofol:59468/",
-        "sessionResource": "api/sessions"
-    }
-]

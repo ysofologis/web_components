@@ -3,16 +3,8 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/router.js</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/templates/topbar.html</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/models/session.js</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/extensions.js</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/eventhub.js</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/views/resource.js</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/main.js</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/models/base.js</file>
-            <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/start.js</file>
             <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/templates/resources/users.html</file>
+<<<<<<< HEAD
             <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/config/topbar.json</file>
             <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/config/resources.json</file>
             <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/init.js</file>
@@ -28,6 +20,8 @@
             <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/js/storage.js</file>
             <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/templates/shell.html</file>
             <file>file:/home/freesrc/Projects/GitHub/web_components/MyAdmin/client/MyAdmin/public_html/using.canjs/app/templates/resources/groups.html</file>
+=======
+>>>>>>> ed07dfb5aafb0c95c9ee7edb53782fd86aacb4f0
         </group>
     </open-files>
 </project-private>
