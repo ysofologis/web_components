@@ -1,0 +1,9 @@
+{
+    "productinfo": {
+        "path": "api/productinfo",
+        "requires-session": false
+    },
+    "users": {
+        "path": "api/users"
+    }
+}
