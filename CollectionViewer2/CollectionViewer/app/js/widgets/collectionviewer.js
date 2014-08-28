@@ -6,10 +6,9 @@
  * DEPENDENCIES: jquery, kendo.web, spiner.js
  */
 
-var relational = relational || {};
-relational.widgets = relational.widgets || {};
+console.log();
 
-relational.widgets.collectionviewer = (function (window, $) {
+define(['jquery', 'kendo'], function ($, kendo) {
 
     var app_defaults = {};
 
@@ -1193,6 +1192,5 @@ relational.widgets.collectionviewer = (function (window, $) {
     };
 
     return module;
-
-})(window, jQuery);
+});
 

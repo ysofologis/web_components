@@ -30,7 +30,7 @@ require.config({
         },
         bootstrap : ["jquery"],
         spin : {
-            deps: ["jquery"],
+            deps: ["jquery"]
         },
         'jquery.slimscroll' : ['jquery']
     }

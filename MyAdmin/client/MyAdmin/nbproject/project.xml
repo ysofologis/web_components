@@ -5,10 +5,5 @@
         <data xmlns="http://www.netbeans.org/ns/clientside-project/1">
             <name>MyAdmin</name>
         </data>
-        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
-            <word>TODO</word>
-            <word>WebAPI</word>
-            <word>Workflow</word>
-        </spellchecker-wordlist>
     </configuration>
 </project>

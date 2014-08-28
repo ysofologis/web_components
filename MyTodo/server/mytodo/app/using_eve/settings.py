@@ -84,6 +84,7 @@ people = {
 task_status_schema = {
         'type': 'string',
         'required': True,
+        'default' : "initialized",
         'allowed': ["initialized", "active", "completed", "suspended", "faulted", "deleted"],
 }
 
@@ -118,7 +119,7 @@ task_schema = {
     },
     'type': {
         'type': 'string',
-        'required': True,
+        'default' : "human-task",
         'allowed': ["notification", "human-task", "service-bridge"],
     },
     'assigned_to': task_assignee_schema,
@@ -163,7 +164,35 @@ tasks = {
     'schema': task_schema
 }
 
+mitsos = {
+    # 'title' tag used in item links. Defaults to the resource title minus
+    # the final, plural 's' (works fine in most cases but not for 'people')
+    'item_title': 'mitsakos',
+    
+    #'public_methods': ['GET', 'PATCH', 'POST', 'DELETE'],
+    # by default the standard item entry point is defined as
+    # '/people/<ObjectId>'. We leave it untouched, and we also enable an
+    # additional read-only entry point. This way consumers can also perform
+    # GET requests at '/people/<lastname>'.
+    'additional_lookup': {
+        'url': 'regex("[\w]+")',
+        'field': 'title'
+    },
+
+    # We choose to override global cache-control directives for this resource.
+    'cache_control': 'max-age=10,must-revalidate',
+    'cache_expires': 10,
+    
+    'item_methods' : ['GET','PATCH','DELETE', 'PUT'],
+
+    'schema': task_schema
+}
+
+
+
+
 DOMAIN = {
           'people': people,
-          'tasks' : tasks
+          'tasks' : tasks,
+	  'mitsos' : mitsos
 }
