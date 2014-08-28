@@ -4,13 +4,20 @@
  * and open the template in the editor.
  */
 
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 +function(config, since) {
-    describe("RESOURCE --> Product Information", function() {
+    describe("RESOURCE --> Sessions", function() {
         var services = config.get('services');
         var resources = config.get('resources');
         for (var ix = 0; ix < services.length; ix++) {
             var serviceConf = services[ix];
-            var apiUrl = serviceConf.baseUrl + resources.productinfo.path;
+            var apiUrl = serviceConf.baseUrl + resources.sessions.path;
             // protect closue references inside loop
             +function(apiUrl) {
                 var productInfo = null;

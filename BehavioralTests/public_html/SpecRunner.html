@@ -34,7 +34,7 @@ and open the template in the editor.
         <script src="spec/ProductInfo.js"></script>
 
         <script type="text/javascript">
-            (function() {
+            (function(jasmine) {
                 var jasmineEnv = jasmine.getEnv();
                 jasmineEnv.updateInterval = 1000;
 
@@ -59,7 +59,7 @@ and open the template in the editor.
                     jasmineEnv.execute();
                 }
 
-            })();
+            })(jasmine);
         </script>        
     </body>
 </html>

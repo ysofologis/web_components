@@ -3,6 +3,9 @@
         "path": "api/productinfo",
         "requires-session": false
     },
+    "sessions": {
+        "path": "api/sessions"
+    },
     "users": {
         "path": "api/users"
     }
