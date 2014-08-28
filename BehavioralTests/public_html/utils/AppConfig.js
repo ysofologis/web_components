@@ -23,6 +23,9 @@ var appConfig = (function($) {
                     console.log(xhr);
                 }
             });
+            if(_conf[configName]) {
+                return _conf[configName];
+            }
         } else {
             if (callback) {
                 callback(_conf[configName]);

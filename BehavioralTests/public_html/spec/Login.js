@@ -11,23 +11,31 @@
  * and open the template in the editor.
  */
 
-+function(config, since) {
++function(config, expect, since) {
     describe("RESOURCE --> Sessions", function() {
         var services = config.get('services');
         var resources = config.get('resources');
+        var login = config.get('login');
+        
         for (var ix = 0; ix < services.length; ix++) {
             var serviceConf = services[ix];
             var apiUrl = serviceConf.baseUrl + resources.sessions.path;
+            var username = login.default.user;
+            var password = login.default.password;
+            var headers = {};
+            headers['authorization'] = 'basic ' + btoa('{0}:{1}'.format(username,password));
             // protect closue references inside loop
-            +function(apiUrl) {
-                var productInfo = null;
+            +function(apiUrl, headers) {
+                var sessionInfo = null;
                 var req = new AjaxRequest({
                     url: apiUrl,
+                    type: 'POST',
+                    headers: headers,
                     success: function(data) {
-                        productInfo = data;
+                        sessionInfo = data;
                     }
                 });
-                it("should return product info from [" + apiUrl + "]", function() {
+                it("should be able to login for user '{0}' at [{1}]".format('sysadmin', apiUrl), function() {
                     runs(function() {
                         req.execute();
                     });
@@ -37,16 +45,16 @@
                     runs(function() {
                         since("http status must be 200").
                                 expect(req.status()).toEqual(200);
-                        since("product info should not be null").
-                                expect(productInfo).not.toBe(null);
+                        since("session info should not be null").
+                                expect(sessionInfo).not.toBe(null);
                     });
                 });
-                it("should contains the version attribute", function() {
-                    since("product info should contain version attribute").
-                            expect(productInfo.Version).toBeDefined();
+                it("should contains the SessionId attribute", function() {
+                    expect(sessionInfo.SessionId).toBeDefined();
                 });
-            }(apiUrl);
+                
+            }(apiUrl, headers);
         }
     });
-}(appConfig, since);
+}(appConfig, expect, since);
 
