@@ -71,21 +71,6 @@ var ApiRequest = (function($,console) {
                 }
             });
         };
-        that.logout = function(sessionUrl, sessionId) {
-            var headers = {};
-            headers['session-id'] = sessionId;
-            $.ajax({
-                url: sessionUrl + "/" + sessionId,
-                type: 'DELETE',
-                headers: headers,
-                success: function(data) {
-                    console.log(data);
-                },
-                error: function(xhr) {
-                    console.log(xhr);
-                }
-            });
-        };
     };
     return AjaxWrapper;
 })(jQuery, window.console);

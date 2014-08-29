@@ -12,7 +12,12 @@ var appState = (function() {
             _sessionInfo[serviceName] = session;
         },
         getSessionId: function(serviceName) {
-            return _sessionInfo[serviceName].SessionId;
+            var sessionInfo = _sessionInfo[serviceName] || null;
+            if(sessionInfo !== null) {
+                return _sessionInfo[serviceName].SessionId;
+            } else {
+                return null;
+            }
         }
     };
 })();

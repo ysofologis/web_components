@@ -25,15 +25,15 @@
             var headers = {};
             headers['authorization'] = 'basic ' + btoa('{0}:{1}'.format(username, password));
             // protect closue references inside loop
-            +function(apiUrl, headers) {
+            +function(serviceConf, apiUrl, headers) {
                 var sessionInfo = null;
                 var req = new ApiRequest({
                     url: apiUrl,
                     type: 'POST',
                     headers: headers,
                     success: function(data) {
+                        app.setSession(serviceConf.name, data);
                         sessionInfo = data;
-                        app.setSession(sessionInfo);
                     }
                 });
                 it("should be able to login for user '{0}' at [{1}]".format(username, apiUrl), function() {
@@ -56,7 +56,7 @@
                 it("should contains the SessionId attribute", function() {
                     expect(sessionInfo.SessionId).toBeDefined();
                 });
-            }(apiUrl, headers);
+            }(serviceConf, apiUrl, headers);
         }
     });
 }(appState, appConfig, expect, since);

@@ -5,7 +5,7 @@
  */
 
 +function(suite) {
-    suite.execute("users", "GET");
-    suite.execute("roles", "GET");
+    suite.execute("users", "GET", 200);
+    suite.execute("roles", "GET", 200);
     
 }(resourceSuite);

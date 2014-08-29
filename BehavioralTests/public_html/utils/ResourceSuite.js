@@ -21,7 +21,7 @@ var resourceSuite = (function(app, config, since) {
                 var serviceConf = services[ix];
                 var apiUrl = serviceConf.baseUrl + "api/" + resourceName;
                 // protect closure references inside loop
-                +function(apiUrl, sessionUrl) {
+                +function(apiUrl, serviceConf) {
                     var sessionInfo = null;
                     var req = new ApiRequest({
                         url: apiUrl,
@@ -32,19 +32,19 @@ var resourceSuite = (function(app, config, since) {
                     });
                     it("it should be able call resource", function() {
                         runs(function() {
-                            req.execute(app.getSessionId());
+                            req.execute( app.getSessionId(serviceConf.name) );
                         });
                         
                         waitsFor(function() {
                             return req.isCompleted();
-                        }, "request completed", 5000);
+                        }, "request completed", 5000 );
                         
                         runs(function() {
                             since( "http status must be {0}".format(httpStatus) ).
-                                    expect(req.status()).toEqual(httpStatus);
+                                    expect( req.status() ).toEqual(httpStatus);
                         });
                     });
-                }(apiUrl);
+                }(apiUrl, serviceConf);
             }
         });
     }
