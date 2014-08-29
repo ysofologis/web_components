@@ -3,10 +3,5 @@
         "name": "atlas-isofol",
         "baseUrl": "http://isofol:59468/",
         "sessionResource": "api/sessions"
-    },
-    {
-        "name": "atlas-ia2server",
-        "baseUrl": "http://ia2server:8095/",
-        "sessionResource": "api/sessions"
     }
 ]

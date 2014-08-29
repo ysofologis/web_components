@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 +function(config, expect) {
-    describe("Configuration", function() {
+    describe("CONFIGURATION", function() {
         var services = null;
         var resources = null;
         config.get('services', function(data) {

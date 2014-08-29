@@ -3,14 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-var AjaxRequest = (function($) {
+var ApiRequest = (function($,console) {
     function AjaxWrapper(req) {
         var that = this;
         var _completed = false;
         var _result = null;
         var _status = 0;
         var _data = null;
-        var _sessionInfo = null;
         that.isCompleted = function() {
             return _completed;
         };
@@ -35,46 +34,58 @@ var AjaxRequest = (function($) {
         var origError = req.error || function(xhr) {
         };
         req.error = function(xhr) {
+            console.log(xhr);
             origError(xhr);
             _status = xhr.status;
             _completed = true;
         };
         req.crossDomain = true;
-        that.execute = function() {
+        that.execute = function(sessionId) {
             _completed = false;
             _status = -1;
             _data = null;
-            if (_sessionInfo !== null) {
+            if (sessionId !== null) {
                 var headers = req.headers || {};
-                headers['session-id'] = _sessionInfo.SessionId;
+                headers['session-id'] = sessionId;
                 req.headers = headers;
             }
             $.ajax(req);
         };
-        that.login = function(apiUrl, username, password, onsuccess, onerror) {
+        that.login = function(sessionUrl, username, password, onsuccess, onerror) {
             var headers = {};
             headers['authorization'] = 'basic ' + btoa(username + ':' + password);
-            _sessionInfo = null;
             $.ajax({
-                url: apiUrl,
+                url: sessionUrl,
                 type: 'POST',
                 headers: headers,
                 success: function(data) {
-                    _sessionInfo = data;
                     if (onsuccess) {
                         onsuccess(data);
                     }
                 },
                 error: function(xhr) {
+                    console.log(xhr);
                     if (onerror) {
                         onerror(xhr);
                     }
                 }
             });
         };
-        that.hasSession = function() {
-            return _sessionInfo !== null;
+        that.logout = function(sessionUrl, sessionId) {
+            var headers = {};
+            headers['session-id'] = sessionId;
+            $.ajax({
+                url: sessionUrl + "/" + sessionId,
+                type: 'DELETE',
+                headers: headers,
+                success: function(data) {
+                    console.log(data);
+                },
+                error: function(xhr) {
+                    console.log(xhr);
+                }
+            });
         };
     };
     return AjaxWrapper;
-})(jQuery);
+})(jQuery, window.console);

@@ -14,7 +14,7 @@
             // protect closue references inside loop
             +function(apiUrl) {
                 var productInfo = null;
-                var req = new AjaxRequest({
+                var req = new ApiRequest({
                     url: apiUrl,
                     success: function(data) {
                         productInfo = data;
