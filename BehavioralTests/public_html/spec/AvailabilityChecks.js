@@ -4,8 +4,9 @@
  * and open the template in the editor.
  */
 
-+function(suite) {
-    suite.execute("users", "GET", 200);
-    suite.execute("roles", "GET", 200);
++function(resourceSuite) {
+    resourceSuite.execute("users", "GET", 200);
+    resourceSuite.execute("roles", "GET", 200);
+    resourceSuite.execute("groups", "GET", 200);
     
 }(resourceSuite);

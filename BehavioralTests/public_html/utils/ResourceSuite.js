@@ -28,6 +28,7 @@ var resourceSuite = (function(app, config, since) {
                         type: method,
                         success: function(data) {
                             sessionInfo = data;
+                            console.log("[{0}] --> SUCCESS".format(apiUrl));
                         }
                     });
                     it("it should be able call resource", function() {
