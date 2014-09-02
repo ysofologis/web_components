@@ -12,11 +12,9 @@
  */
 
 +function(app, config, expect, since) {
-    describe("RESOURCE --> Sessions", function() {
+    describe("LOGOUT", function() {
         var services = config.get('services');
         var resources = config.get('resources');
-        var login = config.get('login');
-
         for (var ix = 0; ix < services.length; ix++) {
             var serviceConf = services[ix];
             var apiUrl = serviceConf.baseUrl + resources.sessions.path;
@@ -36,7 +34,7 @@
                             app.setSession(serviceConf.name, null);
                         }
                     });
-                    it("should be able to logout for user '{0}' at [{1}]".format(username, apiUrl), function() {
+                    it("should be able to logout at [{0}]".format(apiUrl), function() {
 
                         runs(function() {
                             req.execute();

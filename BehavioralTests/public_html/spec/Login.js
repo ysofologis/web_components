@@ -12,7 +12,7 @@
  */
 
 +function(app, config, expect, since) {
-    describe("RESOURCE --> Sessions", function() {
+    describe("LOGIN", function() {
         var services = config.get('services');
         var resources = config.get('resources');
         var login = config.get('login');
@@ -41,11 +41,9 @@
                     runs(function() {
                         req.execute();
                     });
-
                     waitsFor(function() {
                         return sessionInfo !== null;
                     }, "request completed", 2500);
-
                     runs(function() {
                         since("http status must be 200").
                                 expect(req.status()).toEqual(200);
